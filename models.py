@@ -133,8 +133,10 @@ class Bert(nn.Module):
 
         # 如果是训练模式
         if not is_test:
-            loss_fn = nn.CrossEntropyLoss(ignore_index=self.tag_to_ix.get('PAD', -100))  # Assuming 'PAD' is a valid tag and should be ignored
-            loss = loss_fn(logits.view(-1, self.tagset_size), tags.view(-1))
+            # 确保tags中padding位置使用了ignore_index（0）
+            loss_fct = nn.CrossEntropyLoss(ignore_index=0)  # padding标签为0
+            # 直接计算损失，CrossEntropyLoss内部会处理padding
+            loss = loss_fct(logits.view(-1, self.tagset_size), tags.view(-1).long())
             return loss
         else:
             return logits
