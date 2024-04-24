@@ -6,42 +6,33 @@
 @Description: This file is for building model. 
 @All Right Reserve
 '''
-from transformers import BertModel
-
-from torchcrf import CRF
 
 import torch
-from torch import nn
-from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
-# 假设CRF是一个有效的条件随机场实现，你需要根据你的项目来定义或导入
+import torch.nn as nn
+from transformers import BertModel
+from torchcrf import CRF
+from utils import tag2idx
+from graphviz import Digraph
 
 class Bert_BiLSTM_CRF(nn.Module):
-    def __init__(self, tag_to_ix, embedding_dim=768, hidden_dim=256, useBERT=True, useBiLSTM=True, useCRF=True):
+
+    def __init__(self, tag_to_ix, embedding_dim=768, hidden_dim=256):
         super(Bert_BiLSTM_CRF, self).__init__()
         self.tag_to_ix = tag_to_ix
         self.tagset_size = len(tag_to_ix)
         self.hidden_dim = hidden_dim
         self.embedding_dim = embedding_dim
-        self.useBERT = useBERT
-        self.useBiLSTM = useBiLSTM
-        self.useCRF = useCRF
 
-        # self.tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
-        self.bert = BertModel.from_pretrained('bert-base-chinese', return_dict=False) if self.useBERT else None
+        self.bert = BertModel.from_pretrained('bert-base-chinese')
         self.lstm = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim//2,
-                            num_layers=2, bidirectional=True, batch_first=True) if self.useBiLSTM else None
+                            num_layers=2, bidirectional=True, batch_first=True)
         self.dropout = nn.Dropout(p=0.1)
         self.linear = nn.Linear(hidden_dim, self.tagset_size)
-        self.crf = CRF(self.tagset_size, batch_first=True) if self.useCRF else None
-
+        self.crf = CRF(self.tagset_size, batch_first=True)
+    
     def _get_features(self, sentence):
-        # sentence_tensors: [batch_size, seq_len]
-        # sentence_masks: [batch_size, seq_len]
         with torch.no_grad():
-            if self.useBERT:
-                embeds, _ = self.bert(sentence)
-            else:
-                embeds = sentence  
+          embeds, _  = self.bert(sentence)
         enc, _ = self.lstm(embeds)
         enc = self.dropout(enc)
         feats = self.linear(enc)
@@ -49,15 +40,108 @@ class Bert_BiLSTM_CRF(nn.Module):
 
     def forward(self, sentence, tags, mask, is_test=False):
         emissions = self._get_features(sentence)
+        if not is_test: # Training，return loss
+            loss=-self.crf.forward(emissions, tags, mask, reduction='mean')
+            return loss
+        else: # Testing，return decoding
+            decode=self.crf.decode(emissions, mask)
+            return decode
+ 
+
+class BiLSTM_CRF(nn.Module):
+    def __init__(self, tag_to_ix, vocab_size, embedding_dim=768, hidden_dim=256, pad_index=0):
+        super(BiLSTM_CRF, self).__init__()
+        self.tag_to_ix = tag_to_ix
+        self.tagset_size = len(tag_to_ix)
+        self.hidden_dim = hidden_dim
+        self.embedding_dim = embedding_dim
+        self.pad_index = pad_index
+
+        # 词嵌入层，替换了原来的BERT模型
+        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=pad_index)
+        self.lstm = nn.LSTM(input_size=embedding_dim, 
+                             hidden_size=hidden_dim // 2,
+                             num_layers=2,
+                             bidirectional=True,
+                             batch_first=True)
+        self.dropout = nn.Dropout(p=0.1)
+        # 通常在LSTM后不再需要线性层，因为CRF层可以直接接收LSTM的输出
+        self.crf = CRF(self.tagset_size, batch_first=True)
+
+    def _get_features(self, sentence, mask):
+        # 词嵌入
+        embeds = self.embedding(sentence)
+        # 应用mask来忽略padding的词嵌入
+        embeds = embeds * mask.unsqueeze(-1)
+        
+        # 通过LSTM层
+        enc, _ = self.lstm(embeds)
+        
+        # 应用dropout
+        enc = self.dropout(enc)
+        
+        # 由于CRF期望的输入是最后一个有效的输出状态，我们需要取LSTM输出的最后一个有效时间步
+        # 对于填充的序列，我们使用mask来选择最后一个非填充的输出
+        last_output = enc * mask.unsqueeze(-1)
+        last_output = last_output.sum(dim=1)
+        
+        return last_output
+
+    def forward(self, sentence, tags, mask):
+        # 获取特征
+        emissions = self._get_features(sentence, mask)
+        
+        # 训练时计算损失
+        if tags is not None:
+            loss = - self.crf.forward(emissions, tags, mask, reduction='mean')
+            return loss
+        
+        # 测试时解码得到最可能的标签序列
+        else:
+            decode = self.crf.decode(emissions, mask)
+            return decode
+
+
+
+class Bert(nn.Module):
+    def __init__(self, tag_to_ix, embedding_dim=768, hidden_dim=256):  # hidden_dim is not used for BertOnly
+        super(Bert, self).__init__()
+        self.tag_to_ix = tag_to_ix
+        self.tagset_size = len(tag_to_ix)
+        self.bert = BertModel.from_pretrained('bert-base-chinese')
+        # Since we are not using a linear layer transformation, the hidden_dim parameter is not used
+        
+    def _get_features(self, sentence):
+        # We don't need to use no_grad context as we are not computing gradients in the forward pass anyway
+        embeds, _ = self.bert(sentence)
+        return embeds  # Directly return the embeddings from BERT
+
+    def forward(self, sentence, tags=None, mask=None, is_test=False):
+        # During training, tags are expected; during testing, we only need the predictions
+        features = self._get_features(sentence)
         if not is_test:
-            if self.useCRF:
-                loss=-self.crf.forward(emissions, tags, mask, reduction='mean')
-            else:
-                loss = torch.nn.functional.cross_entropy(emissions.view(-1, self.tagset_size), tags.view(-1), reduction='mean')
+            # Apply a linear transformation to map the BERT output to the tagset size
+            # Since the original hidden_dim is not used, we use the embedding_dim which is the size of the BERT output
+            logits = nn.functional.linear(features, self.tagset_size)
+            loss = nn.functional.cross_entropy(logits.view(-1, self.tagset_size), tags.view(-1), reduction='mean')
             return loss
         else:
-            if self.useCRF:
-                decode=self.crf.decode(emissions, mask)
-            else:
-                decode = emissions.argmax(dim=-1)
-            return decode
+            # During testing, you might want to apply some kind of decoding strategy to the raw BERT outputs
+            # For example, using argmax to get the most probable tag for each token
+            probs = nn.functional.softmax(features, dim=2)
+            predictions = probs.argmax(dim=2)
+            return predictions
+        
+if __name__=="__main__":
+    model = Bert_BiLSTM_CRF(tag2idx)
+    print(model)
+
+    # 将模型转换为图形
+    dot = model.create_graph(dot=True)
+    # 生成图形
+    with open("model_graph.dot", 'w') as f:
+        f.write(dot)
+    # 使用graphviz查看图形
+    graph = Digraph()
+    graph.from_source('model_graph.dot')
+    graph.view()

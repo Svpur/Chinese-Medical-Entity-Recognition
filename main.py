@@ -16,7 +16,7 @@ import warnings
 import argparse
 import numpy as np
 from sklearn import metrics
-from models import Bert_BiLSTM_CRF
+from models import Bert_BiLSTM_CRF, BiLSTM_CRF, Bert
 from transformers import AdamW, get_linear_schedule_with_warmup
 from utils import NerDataset, PadBatch, VOCAB, tokenizer, tag2idx, idx2tag
 
@@ -134,10 +134,19 @@ if __name__=="__main__":
     parser.add_argument("--trainset", type=str, default="./CCKS_2019_Task1/processed_data/train_dataset.txt")
     parser.add_argument("--validset", type=str, default="./CCKS_2019_Task1/processed_data/val_dataset.txt")
     parser.add_argument("--testset", type=str, default="./CCKS_2019_Task1/processed_data/test_dataset.txt")
+    parser.add_argument("--Model", type=str, default="Bert_BiLSTM_CRF")
 
     ner = parser.parse_args()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = Bert_BiLSTM_CRF(tag2idx , useBERT=True, useBiLSTM=False, useCRF=False).cuda()
+    if ner.Model == 'Bert_BiLSTM_CRF':
+        print('Loading Bert_BiLSTM_CRF model.')
+        model = Bert_BiLSTM_CRF(tag2idx).cuda()
+    elif ner.Model == 'Bert_CRF':
+        print('Loading Bert_CRF model.')
+        model = BiLSTM_CRF(tag2idx).cuda()
+    elif ner.Model == 'Bert':
+        print('Loading Bert model.')
+        model = Bert(tag2idx).cuda()
 
     print('Initial model Done.')
     train_dataset = NerDataset(ner.trainset)
