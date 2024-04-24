@@ -137,7 +137,7 @@ if __name__=="__main__":
 
     ner = parser.parse_args()
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = Bert_BiLSTM_CRF(tag2idx).cuda()
+    model = Bert_BiLSTM_CRF(tag2idx , useBERT=True, useBiLSTM=False, useCRF=False).cuda()
 
     print('Initial model Done.')
     train_dataset = NerDataset(ner.trainset)
