@@ -133,18 +133,24 @@ class Bert(nn.Module):
 
         # 如果是训练模式
         if not is_test:
+            # # 确保tags也基于token级别
+            # loss_fct = nn.CrossEntropyLoss(ignore_index=0)  # 忽略padding的loss计算，假设padding标签为0
+            # # 这里需要对logits做适当的view处理以匹配tags的形状，但通常不需要view，直接传入序列即可
+            # active_loss = attention_mask.view(-1) == 1
+            # # active_logits = logits.view(-1, self.tagset_size)[active_loss]
+            # # active_labels = tags.view(-1)[active_loss]
+
+            # active_loss_indices = torch.where(active_loss)[0]  # 获取active_loss中为True的索引
+            # active_logits = logits.view(-1, self.tagset_size)[active_loss_indices]
+            # active_labels = tags.view(-1)[active_loss_indices]
+
+            # loss = loss_fct(active_logits, active_labels)
             # 确保tags也基于token级别
-            loss_fct = nn.CrossEntropyLoss(ignore_index=0)  # 忽略padding的loss计算，假设padding标签为0
-            # 这里需要对logits做适当的view处理以匹配tags的形状，但通常不需要view，直接传入序列即可
-            active_loss = attention_mask.view(-1) == 1
-            # active_logits = logits.view(-1, self.tagset_size)[active_loss]
-            # active_labels = tags.view(-1)[active_loss]
+            loss_fct = nn.CrossEntropyLoss()  
 
-            active_loss_indices = torch.where(active_loss)[0]  # 获取active_loss中为True的索引
-            active_logits = logits.view(-1, self.tagset_size)[active_loss_indices]
-            active_labels = tags.view(-1)[active_loss_indices]
-
-            loss = loss_fct(active_logits, active_labels)
+            # 因为CrossEntropyLoss内部可以处理padding（通过ignore_index），我们可以直接使用原始序列
+            # 注意：这种方法假定你的tags已经在padding位置使用了ignore_index（如0）
+            loss = loss_fct(logits.view(-1, self.tagset_size), tags.view(-1))
             return loss
         else:
             return logits
