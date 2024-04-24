@@ -121,19 +121,28 @@ class Bert(nn.Module):
         return features
 
     def forward(self, input_ids, attention_mask, tags=None, is_test=False):
-        features = self._get_features(input_ids, attention_mask)
+        outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+        # 使用BERT的token-level输出，而非pooled_output
+        sequence_output = outputs[0]
         
-        # 如果是训练模式，计算并返回损失
+        # 应用dropout
+        sequence_output = self.dropout(sequence_output)
+        
+        # 线性层应用于每个token的输出
+        logits = self.linear(sequence_output)
+
+        # 如果是训练模式
         if not is_test:
-            loss_fct = nn.CrossEntropyLoss()  # 用于多分类任务的损失函数
-            # 假设tags已经调整为对应于pooled_output的形状，对于序列标注这通常需要调整逻辑
-            # 实际应用中，应基于每个token预测而非pooled_output，此处简化处理
-            loss = loss_fct(features.view(-1, self.tagset_size), tags.view(-1))
+            # 确保tags也基于token级别
+            loss_fct = nn.CrossEntropyLoss(ignore_index=0)  # 忽略padding的loss计算，假设padding标签为0
+            # 这里需要对logits做适当的view处理以匹配tags的形状，但通常不需要view，直接传入序列即可
+            active_loss = attention_mask.view(-1) == 1
+            active_logits = logits.view(-1, self.tagset_size)[active_loss]
+            active_labels = tags.view(-1)[active_loss]
+            loss = loss_fct(active_logits, active_labels)
             return loss
-        else:  # 测试模式，直接返回预测结果（简化处理，实际应基于每个token预测）
-            logits = self.linear(features)
-            _, preds = torch.max(logits, 1)
-            return preds
+        else:
+            return logits
 
 # class BertModel(torch.nn.Module):
 #     def __init__(self):
