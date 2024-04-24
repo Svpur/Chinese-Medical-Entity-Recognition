@@ -105,7 +105,7 @@ class BiLSTM_CRF(nn.Module):
 
 class Bert(nn.Module):
 
-    def __init__(self, tag_to_ix, hidden_dim=256):
+    def __init__(self, tag_to_ix, hidden_dim=768):
         super(Bert, self).__init__()
         self.tag_to_ix = tag_to_ix
         self.tagset_size = len(tag_to_ix)
