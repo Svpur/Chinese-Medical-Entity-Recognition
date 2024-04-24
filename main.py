@@ -190,3 +190,9 @@ if __name__=="__main__":
     
     y_test, y_pred = test(best_model, test_iter, device)
     print(metrics.classification_report(y_test, y_pred, labels=labels, digits=3))
+
+    # 保存模型
+    if not os.path.exists('checkpoints'):
+        os.makedirs('checkpoints')
+    torch.save(best_model.state_dict(), "checkpoints/BERT_BiLSTM_CRF.pth")
+    print("模型已保存！")
