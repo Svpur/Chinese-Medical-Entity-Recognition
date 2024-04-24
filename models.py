@@ -6,7 +6,6 @@
 @Description: This file is for building model. 
 @All Right Reserve
 '''
-from transformers import BertTokenizer
 from transformers import BertModel
 
 from torchcrf import CRF
@@ -35,35 +34,30 @@ class Bert_BiLSTM_CRF(nn.Module):
         self.linear = nn.Linear(hidden_dim, self.tagset_size)
         self.crf = CRF(self.tagset_size, batch_first=True) if self.useCRF else None
 
-    def _get_features(self, sentence_tensors, sentence_masks):
+    def _get_features(self, sentence):
         # sentence_tensors: [batch_size, seq_len]
         # sentence_masks: [batch_size, seq_len]
         with torch.no_grad():
             if self.useBERT:
-                embeds, _ = self.bert(sentence_tensors, attention_mask=sentence_masks)
+                embeds, _ = self.bert(sentence)
             else:
-                embeds = sentence_tensors  # 假设sentence_tensors已经是嵌入表示
+                embeds = sentence  
         enc, _ = self.lstm(embeds)
         enc = self.dropout(enc)
         feats = self.linear(enc)
         return feats
 
-    def forward(self, sentence_tensors, tags, sentence_masks, is_test=False):
-        emissions = self._get_features(sentence_tensors, sentence_masks)
+    def forward(self, sentence, tags, mask, is_test=False):
+        emissions = self._get_features(sentence)
         if not is_test:
             if self.useCRF:
-                loss = -self.crf(emissions, tags, sentence_masks)
+                loss=-self.crf.forward(emissions, tags, mask, reduction='mean')
             else:
                 loss = torch.nn.functional.cross_entropy(emissions.view(-1, self.tagset_size), tags.view(-1), reduction='mean')
             return loss
         else:
             if self.useCRF:
-                decode = self.crf.decode(emissions, sentence_masks)
+                decode=self.crf.decode(emissions, mask)
             else:
                 decode = emissions.argmax(dim=-1)
             return decode
-
-# 假设你已经有了处理好的输入张量sentence_tensors和对应的mask sentence_masks
-# 以下是如何使用这个模型的一个例子：
-# model = Bert_BiLSTM_CRF(tag_to_ix=tag_to_ix)
-# loss = model(sentence_tensors, tags, sentence_masks)
