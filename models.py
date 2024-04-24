@@ -115,15 +115,14 @@ class Bert(nn.Module):
         # We don't need to use no_grad context as we are not computing gradients in the forward pass anyway
         embeds, _ = self.bert(sentence)
         return embeds  # Directly return the embeddings from BERT
-
+        
     def forward(self, sentence, tags=None, mask=None, is_test=False):
-        # During training, tags are expected; during testing, we only need the predictions
         features = self._get_features(sentence)
         if not is_test:
-            # Apply a linear transformation to map the BERT output to the tagset size
-            # Since the original hidden_dim is not used, we use the embedding_dim which is the size of the BERT output
+            # Define a linear layer here which was missing in the original code
             logits = nn.functional.linear(features, self.tagset_size)
-            loss = nn.functional.cross_entropy(logits.view(-1, self.tagset_size), tags.view(-1), reduction='mean')
+            loss_fn = nn.CrossEntropyLoss(ignore_index=self.tag_to_ix.get('PAD', -100))  # Assuming 'PAD' is a valid tag and should be ignored
+            loss = loss_fn(logits.view(-1, self.tagset_size), tags.view(-1))
             return loss
         else:
             # During testing, you might want to apply some kind of decoding strategy to the raw BERT outputs
