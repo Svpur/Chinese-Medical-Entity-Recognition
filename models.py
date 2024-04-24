@@ -9,7 +9,8 @@
 
 import torch
 import torch.nn as nn
-from transformers import BertModel
+from transformers import BertForTokenClassification
+from transformers import BertModel, BertTokenizer
 from torchcrf import CRF
 from utils import tag2idx
 from graphviz import Digraph
@@ -102,34 +103,77 @@ class BiLSTM_CRF(nn.Module):
             return decode
 
 
-
 class Bert(nn.Module):
-    def __init__(self, tag_to_ix, embedding_dim=768, hidden_dim=256):  # hidden_dim is not used for BertOnly
+
+    def __init__(self, tag_to_ix, hidden_dim=768):
         super(Bert, self).__init__()
         self.tag_to_ix = tag_to_ix
         self.tagset_size = len(tag_to_ix)
-        self.bert = BertModel.from_pretrained('bert-base-chinese', return_dict=False)
-        # Since we are not using a linear layer transformation, the hidden_dim parameter is not used
+        self.hidden_dim = hidden_dim
+
+        self.bert = BertModel.from_pretrained('bert-base-chinese')
+        self.dropout = nn.Dropout(p=0.1)
+        self.linear = nn.Linear(hidden_dim, self.tagset_size)
+    
+    def _get_features(self, input_ids, attention_mask):
+        _, pooled_output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
+        features = self.dropout(pooled_output)
+        return features
+
+    def forward(self, input_ids, attention_mask, tags=None, is_test=False):
+        features = self._get_features(input_ids, attention_mask)
         
-    def _get_features(self, sentence):
-        # We don't need to use no_grad context as we are not computing gradients in the forward pass anyway
-        embeds, _ = self.bert(sentence)
-        return embeds  # Directly return the embeddings from BERT
-        
-    def forward(self, sentence, tags=None, mask=None, is_test=False):
-        features = self._get_features(sentence)
+        # 如果是训练模式，计算并返回损失
         if not is_test:
-            # Define a linear layer here which was missing in the original code
-            logits = nn.functional.linear(features, self.tagset_size)
-            loss_fn = nn.CrossEntropyLoss(ignore_index=self.tag_to_ix.get('PAD', -100))  # Assuming 'PAD' is a valid tag and should be ignored
-            loss = loss_fn(logits.view(-1, self.tagset_size), tags.view(-1))
+            loss_fct = nn.CrossEntropyLoss()  # 用于多分类任务的损失函数
+            # 假设tags已经调整为对应于pooled_output的形状，对于序列标注这通常需要调整逻辑
+            # 实际应用中，应基于每个token预测而非pooled_output，此处简化处理
+            loss = loss_fct(features.view(-1, self.tagset_size), tags.view(-1))
             return loss
-        else:
-            # During testing, you might want to apply some kind of decoding strategy to the raw BERT outputs
-            # For example, using argmax to get the most probable tag for each token
-            probs = nn.functional.softmax(features, dim=2)
-            predictions = probs.argmax(dim=2)
-            return predictions
+        else:  # 测试模式，直接返回预测结果（简化处理，实际应基于每个token预测）
+            logits = self.linear(features)
+            _, preds = torch.max(logits, 1)
+            return preds
+
+# class BertModel(torch.nn.Module):
+#     def __init__(self):
+#         super(BertModel, self).__init__()
+#         self.bert = BertForTokenClassification.from_pretrained(
+#                        'bert-base-cased', 
+#                                      num_labels=len(unique_labels))
+
+#     def forward(self, input_id, mask, label):
+#         output = self.bert(input_ids=input_id, attention_mask=mask,
+#                            labels=label, return_dict=False)
+#         return output
+
+# class Bert(nn.Module):
+#     def __init__(self, tag_to_ix, embedding_dim=768, hidden_dim=256):  # hidden_dim is not used for BertOnly
+#         super(Bert, self).__init__()
+#         self.tag_to_ix = tag_to_ix
+#         self.tagset_size = len(tag_to_ix)
+#         self.bert = BertModel.from_pretrained('bert-base-chinese', return_dict=False)
+#         # Since we are not using a linear layer transformation, the hidden_dim parameter is not used
+        
+#     def _get_features(self, sentence):
+#         # We don't need to use no_grad context as we are not computing gradients in the forward pass anyway
+#         embeds, _ = self.bert(sentence)
+#         return embeds  # Directly return the embeddings from BERT
+        
+#     def forward(self, sentence, tags=None, mask=None, is_test=False):
+#         features = self._get_features(sentence)
+#         if not is_test:
+#             # Define a linear layer here which was missing in the original code
+#             logits = nn.functional.linear(features, self.tagset_size)
+#             loss_fn = nn.CrossEntropyLoss(ignore_index=self.tag_to_ix.get('PAD', -100))  # Assuming 'PAD' is a valid tag and should be ignored
+#             loss = loss_fn(logits.view(-1, self.tagset_size), tags.view(-1))
+#             return loss
+#         else:
+#             # During testing, you might want to apply some kind of decoding strategy to the raw BERT outputs
+#             # For example, using argmax to get the most probable tag for each token
+#             probs = nn.functional.softmax(features, dim=2)
+#             predictions = probs.argmax(dim=2)
+#             return predictions
         
 if __name__=="__main__":
     model = Bert_BiLSTM_CRF(tag2idx)
