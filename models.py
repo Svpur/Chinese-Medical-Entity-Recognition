@@ -23,7 +23,7 @@ class Bert_BiLSTM_CRF(nn.Module):
         self.hidden_dim = hidden_dim
         self.embedding_dim = embedding_dim
 
-        self.bert = BertModel.from_pretrained('bert-base-chinese')
+        self.bert = BertModel.from_pretrained('bert-base-chinese', return_dict=False)
         self.lstm = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim//2,
                             num_layers=2, bidirectional=True, batch_first=True)
         self.dropout = nn.Dropout(p=0.1)
@@ -108,7 +108,7 @@ class Bert(nn.Module):
         super(Bert, self).__init__()
         self.tag_to_ix = tag_to_ix
         self.tagset_size = len(tag_to_ix)
-        self.bert = BertModel.from_pretrained('bert-base-chinese')
+        self.bert = BertModel.from_pretrained('bert-base-chinese', return_dict=False)
         # Since we are not using a linear layer transformation, the hidden_dim parameter is not used
         
     def _get_features(self, sentence):
