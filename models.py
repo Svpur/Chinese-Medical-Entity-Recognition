@@ -49,7 +49,7 @@ class Bert_BiLSTM_CRF(nn.Module):
             return loss
         else: # Testing，return decoding
             decode=self.crf.decode(emissions, mask)
-            print("decode:", decode.shape)
+            print("decode:", len(decode))
             return decode
 
 # class Bert(torch.nn.Module):
@@ -98,7 +98,6 @@ class Bert_BiLSTM_CRF(nn.Module):
 class Bert(torch.nn.Module):
     def __init__(self, tag_to_ix, embedding_dim=768):
         super(Bert, self).__init__()
-        self.tag_to_ix = tag_to_ix
         self.tagset_size = len(tag_to_ix)
         self.embedding_dim = embedding_dim
 
@@ -120,14 +119,17 @@ class Bert(torch.nn.Module):
 
     def forward(self, sentence, tags, mask, is_test=False):
         emissions = self._get_features(sentence, mask)
-        A = emissions.transpose(1,2)
         print("tags:",tags.shape)
-        print("transpose:",A.shape)
+        print("transpose:",emissions.transpose(1,2).shape)
         if not is_test: # Training，return loss
             loss = self.loss(emissions.transpose(1,2),tags)  # emissions.transpose(1,2) -> batch_size*class_num*max_len
             return loss
         else: # Testing，return decoding
-            return emissions.transpose(1,2)
+            # 使用 argmax 找到每个标记的最高得分标签的索引
+            predicted_labels = torch.argmax(emissions, dim=2)
+            # 将预测的标签张量转换为列表
+            predicted_labels_list = predicted_labels.tolist()
+            return predicted_labels_list
         
         
 if __name__=="__main__":
