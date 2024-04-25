@@ -69,7 +69,7 @@ class Bert(torch.nn.Module):
         self.loss = nn.CrossEntropyLoss() 
 
     def forward(self, input_ids, label_ids, input_mask, is_test=False):
-        sequence_output, _, _ = \
+        sequence_output, _ = \
             self.bert(input_ids, input_mask)
         seq = self.dropout(sequence_output)
         seq = self.reshape(seq, self.shape)
