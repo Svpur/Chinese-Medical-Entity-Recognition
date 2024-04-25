@@ -82,6 +82,9 @@ def validate(e, model, iterator, device):
 
     Y = torch.cat(Y, dim=0).numpy()
     Y_hat = np.array(Y_hat)
+    print("Y:", Y.shape)
+    print("Y_hat:", Y_hat.shape)
+    print()
     acc = (Y_hat == Y).mean()*100
 
     print("Epoch: {}, Val Loss:{:.4f}, Val Acc:{:.3f}%".format(e, losses/step, acc))
@@ -143,9 +146,9 @@ if __name__=="__main__":
     if ner.Model == 'Bert_BiLSTM_CRF':
         print('Loading Bert_BiLSTM_CRF model.')
         model = Bert_BiLSTM_CRF(tag2idx).cuda()
-    elif ner.Model == 'Bert_CRF':
-        print('Loading Bert_CRF model.')
-        model = BiLSTM_CRF(tag2idx).cuda()
+    # elif ner.Model == 'Bert_CRF':
+    #     print('Loading Bert_CRF model.')
+    #     model = BiLSTM_CRF(tag2idx).cuda()
     elif ner.Model == 'Bert':
         print('Loading Bert model.')
         model = Bert(tag2idx).cuda()

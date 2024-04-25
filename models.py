@@ -130,6 +130,7 @@ class Bert(torch.nn.Module):
             # 将预测的标签张量转换为列表
             predicted_labels_list = predicted_labels.tolist()
             print("predicted_labels_list:",len(predicted_labels_list))
+            print()
             return predicted_labels_list
         
         
