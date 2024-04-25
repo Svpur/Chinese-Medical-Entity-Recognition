@@ -75,7 +75,8 @@ def validate(e, model, iterator, device):
             # Y_hat.extend(y_hat.view(-1).cpu())
             for j in y_hat:
               # print("J:",j)
-              Y_hat.extend(j.cpu())
+              # Y_hat.extend(j.cpu())
+              Y_hat.append(j.cpu())
               # print("Y_hat:", len(Y_hat))
               # print("Y_hat:", Y_hat)
             # Save labels
@@ -85,7 +86,7 @@ def validate(e, model, iterator, device):
 
     Y = torch.cat(Y, dim=0).numpy()
     
-    Y_hat = np.array(Y_hat)
+    Y_hat = np.array(Y_hat.argmax(dim=1))
     acc = (Y_hat == Y).mean()*100
 
     print("Epoch: {}, Val Loss:{:.4f}, Val Acc:{:.3f}%".format(e, losses/step, acc))
