@@ -72,16 +72,16 @@ def validate(e, model, iterator, device):
             losses += loss.item()
             # Save prediction
             for j in y_hat:
-              Y_hat.extend(j)
+              Y_hat.extend(j.cpu())
             # Save labels
             mask = (z==1)
             y_orig = torch.masked_select(y, mask)
             Y.append(y_orig.cpu())
 
     Y = torch.cat(Y, dim=0).numpy()
-    # Y_hat = np.array(Y_hat)
-    Y_hat_cpu = [tensor.cpu().numpy() for tensor in Y_hat]
-    Y_hat = Y_hat_cpu
+    Y_hat = np.array(Y_hat)
+    # Y_hat_cpu = [tensor.cpu().numpy() for tensor in Y_hat]
+    # Y_hat = Y_hat_cpu
     # Y_hat = Y_hat.cpu().numpy()  # 先转移到CPU，再转为numpy数组
     acc = (Y_hat == Y).mean()*100
 
