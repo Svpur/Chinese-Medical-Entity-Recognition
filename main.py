@@ -104,7 +104,10 @@ def validate(e, model, iterator, device):
             losses += loss.item()
             # Save prediction
             for j in y_hat:
+              print("J:",j)
               Y_hat.extend(j)
+              print("Y_hat:", len(Y_hat))
+              print("Y_hat:", Y_hat)
             # Save labels
             mask = (z==1)
             y_orig = torch.masked_select(y, mask)
@@ -112,9 +115,10 @@ def validate(e, model, iterator, device):
 
     Y = torch.cat(Y, dim=0).numpy()
     # print("Y:", Y)
-    # print("Y_hat:", Y_hat)
+    print("Y_hat:", len(Y_hat))
     # Y_hat = np.array(Y_hat)
     Y_hat_cpu = [tensor.cpu().numpy() for tensor in Y_hat]
+    print("Y_hat_cpu:", Y_hat_cpu.shape)
     Y_hat = Y_hat_cpu
     # Y_hat_tensor = torch.tensor(Y_hat)
     # # Now move it to CPU
