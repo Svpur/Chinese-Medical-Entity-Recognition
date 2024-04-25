@@ -103,11 +103,12 @@ def validate(e, model, iterator, device):
             loss = model(x, y, z)
             losses += loss.item()
             # Save prediction
-            for j in y_hat:
-              print("J:",j)
-              Y_hat.extend(j)
-              print("Y_hat:", len(Y_hat))
-              print("Y_hat:", Y_hat)
+            Y_hat.extend(y_hat.view(-1).cpu())
+            # for j in y_hat:
+            #   print("J:",j)
+            #   Y_hat.extend(j)
+            #   print("Y_hat:", len(Y_hat))
+            #   print("Y_hat:", Y_hat)
             # Save labels
             mask = (z==1)
             y_orig = torch.masked_select(y, mask)
