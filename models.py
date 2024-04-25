@@ -73,8 +73,8 @@ class Bert(torch.nn.Module):
         print("sequence_output:",sequence_output.shape)
         seq = self.dropout(sequence_output)
         print("seq:",seq.shape)
-        seq = self.reshape(seq, self.shape)
-        print("seq_reshape:",seq.shape)
+        # seq = self.reshape(seq, self.shape)
+        # print("seq_reshape:",seq.shape)
         logits = self.dense_1(seq)
         logits = self.cast(logits, self.dtype)
             
