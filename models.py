@@ -81,6 +81,9 @@ class Bert(torch.nn.Module):
         print("logits:",logits.shape)
         print("label_ids:",label_ids.shape)
 
+        logits = logits.transpose(1,2)
+        print("logits_transpose:",logits.shape)
+
         if not is_test:
             # return_value = self.log_softmax(logits)
             loss = self.loss(logits, label_ids)
