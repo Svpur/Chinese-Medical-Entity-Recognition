@@ -54,7 +54,7 @@ class Bert(torch.nn.Module):
         super(Bert, self).__init__()
         self.bert = BertModel.from_pretrained('bert-base-chinese', return_dict=False)
         self.cast = lambda x, dtype: x.to(dtype)
-        self.log_softmax = F.log_softmax
+        # self.log_softmax = F.log_softmax
         self.dtype = torch.float32
         self.num_labels = len(tag_to_ix)
         self.hidden_size = hidden_size
@@ -79,8 +79,8 @@ class Bert(torch.nn.Module):
         print("label_ids:",label_ids.shape)
 
         if not is_test:
-            return_value = self.log_softmax(logits)
-            loss = self.loss(return_value, label_ids, self.num_labels)
+            # return_value = self.log_softmax(logits)
+            loss = self.loss(logits, label_ids)
             return loss
         else:
             return logits
