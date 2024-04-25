@@ -49,82 +49,82 @@ class Bert_BiLSTM_CRF(nn.Module):
             decode=self.crf.decode(emissions, mask)
             return decode
 
-class Bert(torch.nn.Module):
-    def __init__(self, tag_to_ix, hidden_size=768, dropout_prob=0.1):
-        super(Bert, self).__init__()
-        self.bert = BertModel.from_pretrained('bert-base-chinese', return_dict=False)
-        self.cast = lambda x, dtype: x.to(dtype)
-        # self.log_softmax = F.log_softmax
-        self.dtype = torch.float32
-        self.num_labels = len(tag_to_ix)
-        self.hidden_size = hidden_size
-        self.dropout_prob = dropout_prob
-        # 创建全连接层
-        self.dense_1 = nn.Linear(self.hidden_size, self.num_labels, bias=True)
-        # 转换数据类型
-        self.dense_1 = self.dense_1.to(torch.float32)
-        self.dropout = nn.Dropout(self.dropout_prob)
-        self.reshape = lambda x, shape: x.view(shape)
-        self.shape = (-1, self.hidden_size)
-        self.loss = nn.CrossEntropyLoss() 
-
-    def forward(self, input_ids, label_ids, input_mask, is_test=False):
-        sequence_output, _ = self.bert(input_ids, input_mask)
-        print("sequence_output:",sequence_output.shape)
-        seq = self.dropout(sequence_output)
-        print("seq:",seq.shape)
-        # seq = self.reshape(seq, self.shape)
-        # print("seq_reshape:",seq.shape)
-        logits = self.dense_1(seq)
-        logits = self.cast(logits, self.dtype)
-            
-        print("logits:",logits.shape)
-        print("label_ids:",label_ids.shape)
-
-        logits = logits.transpose(1,2)
-        print("logits_transpose:",logits.shape)
-
-        if not is_test:
-            # return_value = self.log_softmax(logits)
-            loss = self.loss(logits, label_ids)
-            return loss
-        else:
-            return logits
-        
-        
 # class Bert(torch.nn.Module):
-#     def __init__(self, tag_to_ix, embedding_dim=768):
+#     def __init__(self, tag_to_ix, hidden_size=768, dropout_prob=0.1):
 #         super(Bert, self).__init__()
-#         self.tag_to_ix = tag_to_ix
-#         self.tagset_size = len(tag_to_ix)
-#         self.embedding_dim = embedding_dim
-
 #         self.bert = BertModel.from_pretrained('bert-base-chinese', return_dict=False)
-#         self.linear = nn.Linear(self.embedding_dim, self.tagset_size)
-#         self.dropout = nn.Dropout(p=0.1)
-#         self.loss=nn.CrossEntropyLoss()
+#         self.cast = lambda x, dtype: x.to(dtype)
+#         # self.log_softmax = F.log_softmax
+#         self.dtype = torch.float32
+#         self.num_labels = len(tag_to_ix)
+#         self.hidden_size = hidden_size
+#         self.dropout_prob = dropout_prob
+#         # 创建全连接层
+#         self.dense_1 = nn.Linear(self.hidden_size, self.num_labels, bias=True)
+#         # 转换数据类型
+#         self.dense_1 = self.dense_1.to(torch.float32)
+#         self.dropout = nn.Dropout(self.dropout_prob)
+#         self.reshape = lambda x, shape: x.view(shape)
+#         self.shape = (-1, self.hidden_size)
+#         self.loss = nn.CrossEntropyLoss() 
 
-#     def _get_features(self, sentence, mask):
-#         embeds, _  = self.bert(sentence, attention_mask=mask)
-#         print("embeds:",embeds.shape)
-#         enc = self.linear(embeds)
-#         print("enc:",enc.shape)
-#         enc = self.dropout(enc)
-#         # enc = torch.flatten(enc, start_dim=1)
-        
-#         # feats = self.classifier(enc)
-#         return enc
+#     def forward(self, input_ids, label_ids, input_mask, is_test=False):
+#         sequence_output, _ = self.bert(input_ids, input_mask)
+#         print("sequence_output:",sequence_output.shape)
+#         seq = self.dropout(sequence_output)
+#         print("seq:",seq.shape)
+#         # seq = self.reshape(seq, self.shape)
+#         # print("seq_reshape:",seq.shape)
+#         logits = self.dense_1(seq)
+#         logits = self.cast(logits, self.dtype)
+            
+#         print("logits:",logits.shape)
+#         print("label_ids:",label_ids.shape)
 
-#     def forward(self, sentence, tags, mask, is_test=False):
-#         emissions = self._get_features(sentence, mask)
-#         A = emissions.transpose(1,2)
-#         print("tags:",tags.shape)
-#         print("A:",A.shape)
-#         if not is_test: # Training，return loss
-#             loss = self.loss(emissions.transpose(1,2),tags)  # emissions.transpose(1,2) -> batch_size*class_num*max_len
+#         logits = logits.transpose(1,2)
+#         print("logits_transpose:",logits.shape)
+
+#         if not is_test:
+#             # return_value = self.log_softmax(logits)
+#             loss = self.loss(logits, label_ids)
 #             return loss
-#         else: # Testing，return decoding
-#             return emissions.transpose(1,2)
+#         else:
+#             return logits
+        
+        
+class Bert(torch.nn.Module):
+    def __init__(self, tag_to_ix, embedding_dim=768):
+        super(Bert, self).__init__()
+        self.tag_to_ix = tag_to_ix
+        self.tagset_size = len(tag_to_ix)
+        self.embedding_dim = embedding_dim
+
+        self.bert = BertModel.from_pretrained('bert-base-chinese', return_dict=False)
+        self.linear = nn.Linear(self.embedding_dim, self.tagset_size)
+        self.dropout = nn.Dropout(p=0.1)
+        self.loss=nn.CrossEntropyLoss()
+
+    def _get_features(self, sentence, mask):
+        embeds, _  = self.bert(sentence, attention_mask=mask)
+        print("embeds:",embeds.shape)
+        
+        enc = self.dropout(embeds)
+        # enc = torch.flatten(enc, start_dim=1)
+        enc = self.linear(enc)
+        print("enc:",enc.shape)
+        # feats = self.classifier(enc)
+        return enc
+
+    def forward(self, sentence, tags, mask, is_test=False):
+        emissions = self._get_features(sentence, mask)
+        A = emissions.transpose(1,2)
+        print("tags:",tags.shape)
+        print("transpose:",A.shape)
+        if not is_test: # Training，return loss
+            loss = self.loss(emissions.transpose(1,2),tags)  # emissions.transpose(1,2) -> batch_size*class_num*max_len
+            return loss
+        else: # Testing，return decoding
+            return emissions.transpose(1,2)
         
         
 if __name__=="__main__":
