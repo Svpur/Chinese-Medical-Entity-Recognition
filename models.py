@@ -100,10 +100,10 @@ class Bert(torch.nn.Module):
         self.loss=nn.CrossEntropyLoss()
     
     def _get_features(self, sentence, mask):
-        with torch.no_grad():
-          embeds, _  = self.bert(sentence, attention_mask=mask)
+        embeds, _  = self.bert(sentence, attention_mask=mask)
         enc = self.dropout(embeds)
-        feats = self.classifier(enc)
+        # enc = torch.flatten(enc, start_dim=1)
+        feats = self.classifier(enc[0])
         return feats
 
     def forward(self, sentence, tags, mask, is_test=False):

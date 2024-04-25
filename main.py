@@ -57,38 +57,7 @@ def validate(e, model, iterator, device):
     Y, Y_hat = [], []
     losses = 0
     step = 0
-    # with torch.no_grad():
-    #   for i, batch in enumerate(iterator):
-    #       step += 1
-
-    #       x, y, z = batch
-    #       x = x.to(device)
-    #       y = y.to(device)
-    #       z = z.to(device)
-
-    #       y_hat = model(x, y, z, is_test=True)
-
-    #       loss = model(x, y, z, is_test=False)
-    #       losses += loss.item()
-
-    #       # Save predictions
-    #       # Y_hat.extend(y_hat.view(-1).cpu())
-    #       print("y_hat:", y_hat.shape)
-    #       Y_hat.append(y_hat.cpu())
-
-    #       # Save labels
-    #       mask = (z == 1)
-    #       y_orig = torch.masked_select(y, mask)
-    #       print("y_orig:", y_orig.shape)
-    #       Y.append(y_orig.cpu())
-
-    # print("Y:", len(Y))
-    # print("Y_hat:", len(Y_hat))
-    # Y = torch.cat(Y, dim=0).numpy()
-    # Y_hat = torch.stack(Y_hat, dim=0).numpy()
-    # print("Y:", Y.shape)
-    # print("Y_hat:", Y_hat.shape)
-    # acc = (Y_hat == Y).mean() * 100
+   
     with torch.no_grad():
         for i, batch in enumerate(iterator):
             step += 1
@@ -115,17 +84,8 @@ def validate(e, model, iterator, device):
             Y.append(y_orig.cpu())
 
     Y = torch.cat(Y, dim=0).numpy()
-    # print("Y:", Y)
-    # print("Y_hat:", len(Y_hat))
+    
     Y_hat = np.array(Y_hat)
-    # Y_hat_cpu = [tensor.cpu().numpy() for tensor in Y_hat]
-    # print("Y_hat_cpu:", Y_hat_cpu.shape)
-    # Y_hat = Y_hat_cpu
-    # Y_hat_tensor = torch.tensor(Y_hat)
-    # # Now move it to CPU
-    # Y_hat_cpu = Y_hat_tensor.cpu()
-    # # Convert to NumPy array
-    # Y_hat = Y_hat_cpu.numpy()
     acc = (Y_hat == Y).mean()*100
 
     print("Epoch: {}, Val Loss:{:.4f}, Val Acc:{:.3f}%".format(e, losses/step, acc))
