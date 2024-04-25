@@ -103,7 +103,7 @@ class Bert(torch.nn.Module):
         embeds, _  = self.bert(sentence, attention_mask=mask)
         enc = self.dropout(embeds)
         # enc = torch.flatten(enc, start_dim=1)
-        feats = self.classifier(embeds)
+        feats = self.classifier(enc)
         return feats
 
     def forward(self, sentence, tags, mask, is_test=False):
