@@ -98,9 +98,9 @@ class Bert(torch.nn.Module):
 
     def _get_features(self, sentence, mask):
         embeds, _  = self.bert(sentence, attention_mask=mask)
-        print(embeds.shape)
+        print("embeds:",embeds.shape)
         enc = self.linear(embeds)
-        print(enc.shape)
+        print("enc:",enc.shape)
         enc = self.dropout(enc)
         # enc = torch.flatten(enc, start_dim=1)
         
@@ -110,8 +110,8 @@ class Bert(torch.nn.Module):
     def forward(self, sentence, tags, mask, is_test=False):
         emissions = self._get_features(sentence, mask)
         A = emissions.transpose(1,2)
-        print(tags.shape)
-        print(A.shape)
+        print("tags:",tags.shape)
+        print("A:",A.shape)
         if not is_test: # Training，return loss
             loss = self.loss(emissions.transpose(1,2),tags)  # emissions.transpose(1,2) -> batch_size*class_num*max_len
             return loss
