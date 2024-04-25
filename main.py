@@ -78,10 +78,13 @@ def validate(e, model, iterator, device):
           mask = (z == 1)
           y_orig = torch.masked_select(y, mask)
           Y.append(y_orig.cpu())
-
+          
+    print("Y:", Y)
+    print("Y_hat:", Y_hat)
     Y = torch.cat(Y, dim=0).numpy()
     Y_hat = torch.stack(Y_hat, dim=0).numpy()
-
+    print("Y:", Y)
+    print("Y_hat:", Y_hat)
     acc = (Y_hat == Y).mean() * 100
     # with torch.no_grad():
     #     for i, batch in enumerate(iterator):
