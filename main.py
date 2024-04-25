@@ -58,32 +58,60 @@ def validate(e, model, iterator, device):
     losses = 0
     step = 0
     with torch.no_grad():
-        for i, batch in enumerate(iterator):
-            step += 1
+      for i, batch in enumerate(iterator):
+          step += 1
 
-            x, y, z = batch
-            x = x.to(device)
-            y = y.to(device)
-            z = z.to(device)
+          x, y, z = batch
+          x = x.to(device)
+          y = y.to(device)
+          z = z.to(device)
 
-            y_hat = model(x, y, z, is_test=True)
+          y_hat = model(x, y, z, is_test=True)
 
-            loss = model(x, y, z)
-            losses += loss.item()
-            # Save prediction
-            for j in y_hat:
-              Y_hat.extend(j.cpu())
-            # Save labels
-            mask = (z==1)
-            y_orig = torch.masked_select(y, mask)
-            Y.append(y_orig.cpu())
+          loss = model(x, y, z, is_test=False)
+          losses += loss.item()
+
+          # Save predictions
+          Y_hat.extend(y_hat.view(-1).cpu())
+
+          # Save labels
+          mask = (z == 1)
+          y_orig = torch.masked_select(y, mask)
+          Y.append(y_orig.cpu())
 
     Y = torch.cat(Y, dim=0).numpy()
-    Y_hat = np.array(Y_hat)
-    # Y_hat_cpu = [tensor.cpu().numpy() for tensor in Y_hat]
-    # Y_hat = Y_hat_cpu
-    # Y_hat = Y_hat.cpu().numpy()  # 先转移到CPU，再转为numpy数组
-    acc = (Y_hat == Y).mean()*100
+    Y_hat = torch.stack(Y_hat, dim=0).numpy()
+
+    acc = (Y_hat == Y).mean() * 100
+    # with torch.no_grad():
+    #     for i, batch in enumerate(iterator):
+    #         step += 1
+
+    #         x, y, z = batch
+    #         x = x.to(device)
+    #         y = y.to(device)
+    #         z = z.to(device)
+
+    #         y_hat = model(x, y, z, is_test=True)
+
+    #         loss = model(x, y, z)
+    #         losses += loss.item()
+    #         # Save prediction
+    #         for j in y_hat:
+    #           Y_hat.extend(j.cpu())
+    #         # Save labels
+    #         mask = (z==1)
+    #         y_orig = torch.masked_select(y, mask)
+    #         Y.append(y_orig.cpu())
+
+    # Y = torch.cat(Y, dim=0).numpy()
+    # print("Y:", Y)
+    # print("Y_hat:", Y_hat)
+    # Y_hat = np.array(Y_hat)
+    # # Y_hat_cpu = [tensor.cpu().numpy() for tensor in Y_hat]
+    # # Y_hat = Y_hat_cpu
+    # # Y_hat = Y_hat.cpu().numpy()  # 先转移到CPU，再转为numpy数组
+    # acc = (Y_hat == Y).mean()*100
 
     print("Epoch: {}, Val Loss:{:.4f}, Val Acc:{:.3f}%".format(e, losses/step, acc))
     return model, losses/step, acc
