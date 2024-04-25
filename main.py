@@ -74,7 +74,7 @@ def validate(e, model, iterator, device):
             # Save prediction
             # Y_hat.extend(y_hat.view(-1).cpu())
             for j in y_hat:
-              Y_hat.extend(j)
+              Y_hat.extend(j.tolist())
             # Save labels
             mask = (z==1)
             y_orig = torch.masked_select(y, mask)
