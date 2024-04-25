@@ -72,11 +72,14 @@ def validate(e, model, iterator, device):
           losses += loss.item()
 
           # Save predictions
-          Y_hat.extend(y_hat.view(-1).cpu())
+          # Y_hat.extend(y_hat.view(-1).cpu())
+          print("y_hat:", y_hat.shape)
+          Y_hat.append(y_hat.cpu())
 
           # Save labels
           mask = (z == 1)
           y_orig = torch.masked_select(y, mask)
+          print("y_orig:", y_orig.shape)
           Y.append(y_orig.cpu())
 
     print("Y:", len(Y))
