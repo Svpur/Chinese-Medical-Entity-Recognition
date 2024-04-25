@@ -113,10 +113,11 @@ def validate(e, model, iterator, device):
     Y = torch.cat(Y, dim=0).numpy()
     # print("Y:", Y)
     # print("Y_hat:", Y_hat)
-    Y_hat = np.array(Y_hat)
+    # Y_hat = np.array(Y_hat)
     # Y_hat_cpu = [tensor.cpu().numpy() for tensor in Y_hat]
     # Y_hat = Y_hat_cpu
-    # Y_hat = Y_hat.cpu().numpy()  # 先转移到CPU，再转为numpy数组
+    Y_hat_cpu = Y_hat.cpu()
+    Y_hat = Y_hat_cpu.numpy()
     acc = (Y_hat == Y).mean()*100
 
     print("Epoch: {}, Val Loss:{:.4f}, Val Acc:{:.3f}%".format(e, losses/step, acc))
