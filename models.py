@@ -129,6 +129,7 @@ class Bert(torch.nn.Module):
             predicted_labels = torch.argmax(emissions, dim=2)
             # 将预测的标签张量转换为列表
             predicted_labels_list = predicted_labels.tolist()
+            print("predicted_labels_list:",len(predicted_labels_list))
             return predicted_labels_list
         
         
