@@ -102,14 +102,16 @@ class Bert(torch.nn.Module):
         enc = self.linear(embeds)
         print(enc.shape)
         enc = self.dropout(enc)
-        enc = torch.flatten(enc, start_dim=1)
+        # enc = torch.flatten(enc, start_dim=1)
         
         # feats = self.classifier(enc)
         return enc
 
     def forward(self, sentence, tags, mask, is_test=False):
         emissions = self._get_features(sentence, mask)
+        A = emissions.transpose(1,2)
         print(tags.shape)
+        print(A.shape)
         if not is_test: # Training，return loss
             loss = self.loss(emissions.transpose(1,2),tags)  # emissions.transpose(1,2) -> batch_size*class_num*max_len
             return loss
