@@ -70,8 +70,11 @@ class Bert(torch.nn.Module):
 
     def forward(self, input_ids, label_ids, input_mask, is_test=False):
         sequence_output, _ = self.bert(input_ids, input_mask)
+        print("sequence_output:",sequence_output.shape)
         seq = self.dropout(sequence_output)
+        print("seq:",seq.shape)
         seq = self.reshape(seq, self.shape)
+        print("seq_reshape:",seq.shape)
         logits = self.dense_1(seq)
         logits = self.cast(logits, self.dtype)
             
