@@ -95,7 +95,7 @@ def validate(e, model, iterator, device):
 
             x, y, z = batch
             x = x.to(device)
-            # y = y.to(device)
+            y = y.to(device)
             z = z.to(device)
 
             y_hat = model(x, y, z, is_test=True)
@@ -106,7 +106,7 @@ def validate(e, model, iterator, device):
             # Y_hat.extend(y_hat.view(-1).cpu())
             for j in y_hat:
               # print("J:",j)
-              Y_hat.extend(j)
+              Y_hat.extend(j.cpu())
               # print("Y_hat:", len(Y_hat))
               # print("Y_hat:", Y_hat)
             # Save labels
