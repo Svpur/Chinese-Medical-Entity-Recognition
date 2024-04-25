@@ -62,15 +62,14 @@ class Bert(torch.nn.Module):
         # 创建全连接层
         self.dense_1 = nn.Linear(self.hidden_size, self.num_labels, bias=True)
         # 转换数据类型
-        self.dense_1 = self.dense_1.to(torch.float16)
+        self.dense_1 = self.dense_1.to(torch.float32)
         self.dropout = nn.Dropout(self.dropout_prob)
         self.reshape = lambda x, shape: x.view(shape)
         self.shape = (-1, self.hidden_size)
         self.loss = nn.CrossEntropyLoss() 
 
     def forward(self, input_ids, label_ids, input_mask, is_test=False):
-        sequence_output, _ = \
-            self.bert(input_ids, input_mask)
+        sequence_output, _ = self.bert(input_ids, input_mask)
         seq = self.dropout(sequence_output)
         seq = self.reshape(seq, self.shape)
         logits = self.dense_1(seq)
