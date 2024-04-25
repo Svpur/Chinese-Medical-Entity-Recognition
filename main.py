@@ -16,7 +16,7 @@ import warnings
 import argparse
 import numpy as np
 from sklearn import metrics
-from models import Bert_BiLSTM_CRF, BiLSTM_CRF, Bert
+from models import Bert_BiLSTM_CRF, Bert
 from transformers import AdamW, get_linear_schedule_with_warmup
 from utils import NerDataset, PadBatch, VOCAB, tokenizer, tag2idx, idx2tag
 
@@ -57,67 +57,67 @@ def validate(e, model, iterator, device):
     Y, Y_hat = [], []
     losses = 0
     step = 0
-    with torch.no_grad():
-      for i, batch in enumerate(iterator):
-          step += 1
-
-          x, y, z = batch
-          x = x.to(device)
-          y = y.to(device)
-          z = z.to(device)
-
-          y_hat = model(x, y, z, is_test=True)
-
-          loss = model(x, y, z, is_test=False)
-          losses += loss.item()
-
-          # Save predictions
-          # Y_hat.extend(y_hat.view(-1).cpu())
-          print("y_hat:", y_hat.shape)
-          Y_hat.append(y_hat.cpu())
-
-          # Save labels
-          mask = (z == 1)
-          y_orig = torch.masked_select(y, mask)
-          print("y_orig:", y_orig.shape)
-          Y.append(y_orig.cpu())
-
-    print("Y:", len(Y))
-    print("Y_hat:", len(Y_hat))
-    Y = torch.cat(Y, dim=0).numpy()
-    Y_hat = torch.stack(Y_hat, dim=0).numpy()
-    print("Y:", Y.shape)
-    print("Y_hat:", Y_hat.shape)
-    acc = (Y_hat == Y).mean() * 100
     # with torch.no_grad():
-    #     for i, batch in enumerate(iterator):
-    #         step += 1
+    #   for i, batch in enumerate(iterator):
+    #       step += 1
 
-    #         x, y, z = batch
-    #         x = x.to(device)
-    #         y = y.to(device)
-    #         z = z.to(device)
+    #       x, y, z = batch
+    #       x = x.to(device)
+    #       y = y.to(device)
+    #       z = z.to(device)
 
-    #         y_hat = model(x, y, z, is_test=True)
+    #       y_hat = model(x, y, z, is_test=True)
 
-    #         loss = model(x, y, z)
-    #         losses += loss.item()
-    #         # Save prediction
-    #         for j in y_hat:
-    #           Y_hat.extend(j.cpu())
-    #         # Save labels
-    #         mask = (z==1)
-    #         y_orig = torch.masked_select(y, mask)
-    #         Y.append(y_orig.cpu())
+    #       loss = model(x, y, z, is_test=False)
+    #       losses += loss.item()
 
+    #       # Save predictions
+    #       # Y_hat.extend(y_hat.view(-1).cpu())
+    #       print("y_hat:", y_hat.shape)
+    #       Y_hat.append(y_hat.cpu())
+
+    #       # Save labels
+    #       mask = (z == 1)
+    #       y_orig = torch.masked_select(y, mask)
+    #       print("y_orig:", y_orig.shape)
+    #       Y.append(y_orig.cpu())
+
+    # print("Y:", len(Y))
+    # print("Y_hat:", len(Y_hat))
     # Y = torch.cat(Y, dim=0).numpy()
+    # Y_hat = torch.stack(Y_hat, dim=0).numpy()
+    # print("Y:", Y.shape)
+    # print("Y_hat:", Y_hat.shape)
+    # acc = (Y_hat == Y).mean() * 100
+    with torch.no_grad():
+        for i, batch in enumerate(iterator):
+            step += 1
+
+            x, y, z = batch
+            x = x.to(device)
+            y = y.to(device)
+            z = z.to(device)
+
+            y_hat = model(x, y, z, is_test=True)
+
+            loss = model(x, y, z)
+            losses += loss.item()
+            # Save prediction
+            for j in y_hat:
+              Y_hat.extend(j)
+            # Save labels
+            mask = (z==1)
+            y_orig = torch.masked_select(y, mask)
+            Y.append(y_orig.cpu())
+
+    Y = torch.cat(Y, dim=0).numpy()
     # print("Y:", Y)
     # print("Y_hat:", Y_hat)
-    # Y_hat = np.array(Y_hat)
-    # # Y_hat_cpu = [tensor.cpu().numpy() for tensor in Y_hat]
-    # # Y_hat = Y_hat_cpu
-    # # Y_hat = Y_hat.cpu().numpy()  # 先转移到CPU，再转为numpy数组
-    # acc = (Y_hat == Y).mean()*100
+    Y_hat = np.array(Y_hat)
+    # Y_hat_cpu = [tensor.cpu().numpy() for tensor in Y_hat]
+    # Y_hat = Y_hat_cpu
+    # Y_hat = Y_hat.cpu().numpy()  # 先转移到CPU，再转为numpy数组
+    acc = (Y_hat == Y).mean()*100
 
     print("Epoch: {}, Val Loss:{:.4f}, Val Acc:{:.3f}%".format(e, losses/step, acc))
     return model, losses/step, acc
@@ -165,7 +165,7 @@ if __name__=="__main__":
     _best_val_acc = 1e-18
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--n_epochs", type=int, default=40)
     parser.add_argument("--trainset", type=str, default="./CCKS_2019_Task1/processed_data/train_dataset.txt")

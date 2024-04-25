@@ -47,111 +47,72 @@ class Bert_BiLSTM_CRF(nn.Module):
         else: # Testing，return decoding
             decode=self.crf.decode(emissions, mask)
             return decode
- 
 
-class BiLSTM_CRF(nn.Module):
-    def __init__(self, tag_to_ix, vocab_size, embedding_dim=768, hidden_dim=256, pad_index=0):
-        super(BiLSTM_CRF, self).__init__()
-        self.tag_to_ix = tag_to_ix
-        self.tagset_size = len(tag_to_ix)
-        self.hidden_dim = hidden_dim
-        self.embedding_dim = embedding_dim
-        self.pad_index = pad_index
 
-        # 词嵌入层，替换了原来的BERT模型
-        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=pad_index)
-        self.lstm = nn.LSTM(input_size=embedding_dim, 
-                             hidden_size=hidden_dim // 2,
-                             num_layers=2,
-                             bidirectional=True,
-                             batch_first=True)
-        self.dropout = nn.Dropout(p=0.1)
-        # 通常在LSTM后不再需要线性层，因为CRF层可以直接接收LSTM的输出
-        self.crf = CRF(self.tagset_size, batch_first=True)
+# class Bert(nn.Module):
 
-    def _get_features(self, sentence, mask):
-        # 词嵌入
-        embeds = self.embedding(sentence)
-        # 应用mask来忽略padding的词嵌入
-        embeds = embeds * mask.unsqueeze(-1)
+#     def __init__(self, tag_to_ix, hidden_dim=768):
+#         super(Bert, self).__init__()
+#         self.tag_to_ix = tag_to_ix
+#         self.tagset_size = len(tag_to_ix)
+#         self.hidden_dim = hidden_dim
+
+#         self.bert = BertModel.from_pretrained('bert-base-chinese')
+#         self.dropout = nn.Dropout(p=0.1)
+#         self.linear = nn.Linear(hidden_dim, self.tagset_size)
+    
+#     def _get_features(self, input_ids, attention_mask):
+#         _, pooled_output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
+#         features = self.dropout(pooled_output)
+#         return features
+
+#     def forward(self, input_ids, attention_mask, tags=None, is_test=False):
+#         outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+#         # 使用BERT的token-level输出，而非pooled_output
+#         sequence_output = outputs[0]
         
-        # 通过LSTM层
-        enc, _ = self.lstm(embeds)
+#         # 应用dropout
+#         sequence_output = self.dropout(sequence_output)
         
-        # 应用dropout
-        enc = self.dropout(enc)
-        
-        # 由于CRF期望的输入是最后一个有效的输出状态，我们需要取LSTM输出的最后一个有效时间步
-        # 对于填充的序列，我们使用mask来选择最后一个非填充的输出
-        last_output = enc * mask.unsqueeze(-1)
-        last_output = last_output.sum(dim=1)
-        
-        return last_output
+#         # 线性层应用于每个token的输出
+#         logits = self.linear(sequence_output)
 
-    def forward(self, sentence, tags, mask):
-        # 获取特征
-        emissions = self._get_features(sentence, mask)
-        
-        # 训练时计算损失
-        if tags is not None:
-            loss = - self.crf.forward(emissions, tags, mask, reduction='mean')
-            return loss
-        
-        # 测试时解码得到最可能的标签序列
-        else:
-            decode = self.crf.decode(emissions, mask)
-            return decode
+#         # 如果是训练模式
+#         if not is_test:
+#             # 确保tags中padding位置使用了ignore_index（0）
+#             loss_fct = nn.CrossEntropyLoss(ignore_index=0)  # padding标签为0
+#             # 直接计算损失，CrossEntropyLoss内部会处理padding
+#             loss = loss_fct(logits.view(-1, self.tagset_size), tags.view(-1).long())
+#             return loss
+#         else:
+#             return logits
 
-
-class Bert(nn.Module):
-
-    def __init__(self, tag_to_ix, hidden_dim=768):
+class Bert(torch.nn.Module):
+    def __init__(self, tag_to_ix, embedding_dim=768):
         super(Bert, self).__init__()
         self.tag_to_ix = tag_to_ix
         self.tagset_size = len(tag_to_ix)
-        self.hidden_dim = hidden_dim
+        self.embedding_dim = embedding_dim
 
-        self.bert = BertModel.from_pretrained('bert-base-chinese')
+        self.bert = BertModel.from_pretrained('bert-base-chinese', return_dict=False)
+        self.classifier=nn.Linear(self.embedding_dim,self.tagset_size)     
         self.dropout = nn.Dropout(p=0.1)
-        self.linear = nn.Linear(hidden_dim, self.tagset_size)
+        self.loss=nn.CrossEntropyLoss()
     
-    def _get_features(self, input_ids, attention_mask):
-        _, pooled_output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
-        features = self.dropout(pooled_output)
-        return features
+    def _get_features(self, sentence, mask):
+        with torch.no_grad():
+          embeds, _  = self.bert(sentence, attention_mask=mask)
+        enc = self.dropout(embeds)
+        feats = self.classifier(enc)
+        return feats
 
-    def forward(self, input_ids, attention_mask, tags=None, is_test=False):
-        outputs = self.bert(input_ids=input_ids, attention_mask=attention_mask)
-        # 使用BERT的token-level输出，而非pooled_output
-        sequence_output = outputs[0]
-        
-        # 应用dropout
-        sequence_output = self.dropout(sequence_output)
-        
-        # 线性层应用于每个token的输出
-        logits = self.linear(sequence_output)
-
-        # 如果是训练模式
-        if not is_test:
-            # 确保tags中padding位置使用了ignore_index（0）
-            loss_fct = nn.CrossEntropyLoss(ignore_index=0)  # padding标签为0
-            # 直接计算损失，CrossEntropyLoss内部会处理padding
-            loss = loss_fct(logits.view(-1, self.tagset_size), tags.view(-1).long())
+    def forward(self, sentence, tags, mask, is_test=False):
+        emissions = self._get_features(sentence, mask)
+        if not is_test: # Training，return loss
+            loss = self.loss(emissions.transpose(1,2),tags)  # emissions.transpose(1,2) -> batch_size*class_num*max_len
             return loss
-        else:
-            return logits
-
-# class BertModel(torch.nn.Module):
-#     def __init__(self):
-#         super(BertModel, self).__init__()
-#         self.bert = BertForTokenClassification.from_pretrained(
-#                        'bert-base-cased', 
-#                                      num_labels=len(unique_labels))
-
-#     def forward(self, input_id, mask, label):
-#         output = self.bert(input_ids=input_id, attention_mask=mask,
-#                            labels=label, return_dict=False)
-#         return output
+        else: # Testing，return decoding
+            return emissions
 
 # class Bert(nn.Module):
 #     def __init__(self, tag_to_ix, embedding_dim=768, hidden_dim=256):  # hidden_dim is not used for BertOnly
