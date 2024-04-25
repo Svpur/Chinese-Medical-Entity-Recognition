@@ -74,12 +74,13 @@ def validate(e, model, iterator, device):
             # Save prediction
             # Y_hat.extend(y_hat.view(-1).cpu())
             for j in y_hat:
-              Y_hat.extend(j.cpu())
+              Y_hat.extend(j)
             # Save labels
             mask = (z==1)
             y_orig = torch.masked_select(y, mask)
             Y.append(y_orig.cpu())
 
+    Y_hat = [x for x in Y_hat if x != -1]
     Y = torch.cat(Y, dim=0).numpy()
     Y_hat = np.array(Y_hat)
     print("Y:", Y.shape)

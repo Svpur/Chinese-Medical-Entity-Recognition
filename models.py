@@ -129,7 +129,8 @@ class Bert(torch.nn.Module):
             predicted_labels = torch.argmax(emissions, dim=2)
             predicted_labels_masked = predicted_labels.masked_fill(~mask, -1)  # 将填充项设置为 -1
             # 将预测的标签张量转换为列表，并过滤掉填充项
-            predicted_labels_list = [[lab for lab in seq if lab != -1] for seq in predicted_labels_masked]
+            predicted_labels_list = [label.tolist() for label in predicted_labels_masked] 
+            # predicted_labels_list = [[lab for lab in seq if lab != -1] for seq in predicted_labels_masked]
             print("predicted_labels_list:",len(predicted_labels_list))
             print()
             return predicted_labels_list
