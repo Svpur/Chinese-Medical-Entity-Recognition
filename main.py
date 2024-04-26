@@ -80,7 +80,7 @@ def validate(e, model, iterator, device):
             y_orig = torch.masked_select(y, mask)
             Y.append(y_orig.cpu())
 
-    Y_hat = [x for x in Y_hat if x != -100]
+    # Y_hat = [x for x in Y_hat if x != -100]
     Y = torch.cat(Y, dim=0).numpy()
     Y_hat = np.array(Y_hat)
     print("Y:", Y.shape)
