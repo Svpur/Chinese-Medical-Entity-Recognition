@@ -35,7 +35,7 @@ def train(e, model, iterator, optimizer, scheduler, device):
         y = y.to(device) # train_label
         z = z.to(device) # mask
 
-        loss, logits = model(x,y,z)
+        loss, _ = model(x,y,z)
 
         # # 过滤掉特殊token及padding的token
         # logits_clean = logits[0][train_label != 0]
@@ -101,7 +101,7 @@ def test(model, iterator, device):
             x, y, z = batch
             x = x.to(device)
             z = z.to(device)
-            loss, logits = model(x,y,z)
+            _, logits = model(x,y,z)
             # 过滤掉特殊token及padding的token
             logits_clean = logits[0][y != 0]
             label_clean = y[y != 0]
