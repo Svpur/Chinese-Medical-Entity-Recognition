@@ -127,6 +127,7 @@ class Bert(torch.nn.Module):
         else: # Testing，return decoding
             # 在模型的 forward 方法中生成预测标签时使用 mask
             predicted_labels = torch.argmax(emissions, dim=2)
+            print("未填充前:",predicted_labels)
             predicted_labels_masked = predicted_labels.masked_fill(~mask, -100)  # 将填充项设置为 -100
             # 将预测的标签张量转换为列表，并过滤掉填充项
             predicted_labels_list = [label.tolist() for label in predicted_labels_masked] 
