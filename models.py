@@ -130,18 +130,18 @@ class Bert(torch.nn.Module):
             loss = self.loss(emissions.transpose(1,2),tags)  # emissions.transpose(1,2) -> batch_size*class_num*max_len
             return loss
         else: # Testing，return decoding
-            print("emissions:",emissions)
-            print("softmax:",emissions)
+            # print("emissions:",emissions)
+            # print("softmax:",emissions)
             # 在模型的 forward 方法中生成预测标签时使用 mask
             predicted_labels = torch.argmax(emissions, dim=2)
-            print("未填充前:",predicted_labels)
+            # print("未填充前:",predicted_labels)
             predicted_labels_masked = predicted_labels.masked_fill(~mask, -100)  # 将填充项设置为 -100
             # 将预测的标签张量转换为列表，并过滤掉填充项
             predicted_labels_list = [label.tolist() for label in predicted_labels_masked] 
             # predicted_labels_list = [[lab for lab in seq if lab != -1] for seq in predicted_labels_masked]
-            print("predicted_labels_list:",len(predicted_labels_list))
-            print(predicted_labels_list)
-            print()
+            # print("predicted_labels_list:",len(predicted_labels_list))
+            # print(predicted_labels_list)
+            # print()
             return predicted_labels_list
         
         
