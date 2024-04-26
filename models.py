@@ -132,6 +132,7 @@ class Bert(torch.nn.Module):
             predicted_labels_list = [label.tolist() for label in predicted_labels_masked] 
             # predicted_labels_list = [[lab for lab in seq if lab != -1] for seq in predicted_labels_masked]
             print("predicted_labels_list:",len(predicted_labels_list))
+            print(predicted_labels_list)
             print()
             return predicted_labels_list
         
