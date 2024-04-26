@@ -69,6 +69,8 @@ def validate(e, model, iterator, device):
 
             y_hat = model(x, y, z, is_test=True)
 
+            mask = (z==1)
+
             print("y:",len(y))
             print("y_hat:",len(y_hat))
             y_hat_orig = torch.masked_select(y_hat, mask)
@@ -83,7 +85,7 @@ def validate(e, model, iterator, device):
             #   Y_hat.extend(j)
             Y_hat.append(y_hat_orig.cpu())
             # Save labels
-            mask = (z==1)
+            # mask = (z==1)
             y_orig = torch.masked_select(y, mask)
             print("y_orig:",len(y_orig))
             Y.append(y_orig.cpu())
