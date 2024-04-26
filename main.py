@@ -113,11 +113,14 @@ def test(model, iterator, device):
             x = x.to(device)
             z = z.to(device)
             y_hat = model(x, y, z, is_test=True)
-            # Save prediction
-            for j in y_hat:
-              Y_hat.extend(j)
-            # Save labels
             mask = (z==1).cpu()
+            # Save prediction
+            y_hat_orig = torch.masked_select(y_hat, mask)
+            Y_hat.append(y_hat_orig.cpu())
+            # for j in y_hat:
+            #   Y_hat.extend(j)
+            # Save labels
+            # mask = (z==1).cpu()
             y_orig = torch.masked_select(y, mask)
             Y.append(y_orig)
 
