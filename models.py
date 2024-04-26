@@ -123,7 +123,7 @@ class Bert(torch.nn.Module):
     def forward(self, sentence, tags, mask, is_test=False):
         emissions = self._get_features(sentence, mask)
         print("emissions:",emissions)
-        emissions = self.log_softmax(-emissions, dim=-1)
+        emissions = self.log_softmax(emissions, dim=-1)
         print("emissions_sm:",emissions)
         # print("emissions:",emissions.shape)
         # print("tags:",tags.shape)
