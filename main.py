@@ -94,11 +94,11 @@ def validate(e, model, iterator, device):
     Y = torch.cat(Y, dim=0).numpy()
     # Y_hat = np.array(Y_hat)
     Y_hat = torch.cat(Y_hat, dim=0).numpy()
-    # print("Y:", Y.shape)
-    # print(Y)
-    # print("Y_hat:", Y_hat.shape)
-    # print(Y_hat)
-    # print()
+    print("Y:", Y.shape)
+    print(Y)
+    print("Y_hat:", Y_hat.shape)
+    print(Y_hat)
+    print()
     acc = (Y_hat == Y).mean()*100
 
     print("Epoch: {}, Val Loss:{:.4f}, Val Acc:{:.3f}%".format(e, losses/step, acc))

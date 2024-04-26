@@ -122,7 +122,7 @@ class Bert(torch.nn.Module):
 
     def forward(self, sentence, tags, mask, is_test=False):
         emissions = self._get_features(sentence, mask)
-        emissions = self.log_softmax(emissions)
+        # emissions = self.log_softmax(emissions)
         # print("emissions:",emissions.shape)
         # print("tags:",tags.shape)
         # print("transpose:",emissions.transpose(1,2).shape)
@@ -133,7 +133,7 @@ class Bert(torch.nn.Module):
             # print("emissions:",emissions)
             # print("softmax:",emissions)
             # 在模型的 forward 方法中生成预测标签时使用 mask
-            predicted_labels = torch.argmax(emissions, dim=2)
+            predicted_labels = torch.argmax(emissions, dim=2).squeeze()
             # print("未填充前:",predicted_labels)
             # predicted_labels_masked = predicted_labels.masked_fill(~mask, -1)  # 将填充项设置为 -1
             # 将预测的标签张量转换为列表，并过滤掉填充项
