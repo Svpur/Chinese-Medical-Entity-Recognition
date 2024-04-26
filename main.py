@@ -113,7 +113,7 @@ def test(model, iterator, device):
             x = x.to(device)
             z = z.to(device)
             y_hat = model(x, y, z, is_test=True)
-            mask = (z==1).cpu()
+            mask = (z==1)
             # Save prediction
             y_hat_orig = torch.masked_select(y_hat, mask)
             Y_hat.append(y_hat_orig.cpu())
@@ -122,7 +122,7 @@ def test(model, iterator, device):
             # Save labels
             # mask = (z==1).cpu()
             y_orig = torch.masked_select(y, mask)
-            Y.append(y_orig)
+            Y.append(y_orig.cpu())
 
     Y = torch.cat(Y, dim=0).numpy()
     y_true = [idx2tag[i] for i in Y]
