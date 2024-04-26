@@ -125,6 +125,7 @@ def test(model, iterator, device):
             Y.append(y_orig)
 
     Y = torch.cat(Y, dim=0).numpy()
+    Y_hat = torch.cat(Y_hat, dim=0).numpy()
     y_true = [idx2tag[i] for i in Y]
     y_pred = [idx2tag[i] for i in Y_hat]
 
