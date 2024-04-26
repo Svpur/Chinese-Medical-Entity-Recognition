@@ -71,10 +71,10 @@ def validate(e, model, iterator, device):
 
             mask = (z==1)
 
-            print("y:",len(y))
-            print("y_hat:",len(y_hat))
+            # print("y:",len(y))
+            # print("y_hat:",len(y_hat))
             y_hat_orig = torch.masked_select(y_hat, mask)
-            print("y_hat_orig:",len(y_hat_orig))
+            # print("y_hat_orig:",len(y_hat_orig))
 
 
             loss = model(x, y, z)
@@ -87,18 +87,18 @@ def validate(e, model, iterator, device):
             # Save labels
             # mask = (z==1)
             y_orig = torch.masked_select(y, mask)
-            print("y_orig:",len(y_orig))
+            # print("y_orig:",len(y_orig))
             Y.append(y_orig.cpu())
 
     # Y_hat = [x for x in Y_hat if x != -100]
     Y = torch.cat(Y, dim=0).numpy()
     # Y_hat = np.array(Y_hat)
     Y_hat = torch.cat(Y_hat, dim=0).numpy()
-    print("Y:", Y.shape)
-    print(Y)
-    print("Y_hat:", Y_hat.shape)
-    print(Y_hat)
-    print()
+    # print("Y:", Y.shape)
+    # print(Y)
+    # print("Y_hat:", Y_hat.shape)
+    # print(Y_hat)
+    # print()
     acc = (Y_hat == Y).mean()*100
 
     print("Epoch: {}, Val Loss:{:.4f}, Val Acc:{:.3f}%".format(e, losses/step, acc))
