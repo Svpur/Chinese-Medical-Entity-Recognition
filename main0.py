@@ -29,6 +29,7 @@ def train(e, model, iterator, optimizer, scheduler, device):
     losses = 0.0
     step = 0
     for i, batch in enumerate(iterator):
+        # print(step, "------------------------------------------")
         step += 1
         x, y, z = batch
         x = x.to(device) # input_id
@@ -43,7 +44,6 @@ def train(e, model, iterator, optimizer, scheduler, device):
         # # 获取最大概率值
         # predictions = logits_clean.argmax(dim=1)
 
-        loss = model(x, y, z)
         losses += loss.item()
         """ Gradient Accumulation """
         '''
@@ -83,7 +83,6 @@ def validate(e, model, iterator, device):
             # 获取最大概率值
             predictions = logits_clean.argmax(dim=1)
 
-            loss = model(x, y, z)
             losses += loss.item()
 
             # 计算准确率
