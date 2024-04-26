@@ -12,4 +12,6 @@ class Bert(torch.nn.Module):
     def forward(self, input_id, label, mask):
         output = self.bert(input_ids=input_id, attention_mask=mask,
                            labels=label, return_dict=False)
-        return output
+        loss = output.loss
+        logits = output.logits
+        return loss, logits
