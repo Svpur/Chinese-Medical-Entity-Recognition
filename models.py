@@ -10,6 +10,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.nn.init as init
 from transformers import BertForTokenClassification
 from transformers import BertModel, BertTokenizer
 from torchcrf import CRF
@@ -103,8 +104,10 @@ class Bert(torch.nn.Module):
 
         self.bert = BertModel.from_pretrained('bert-base-chinese', return_dict=False)
         self.linear = nn.Linear(self.embedding_dim, self.tagset_size)
+
         self.dropout = nn.Dropout(p=0.1)
         self.loss=nn.CrossEntropyLoss()
+        self.log_softmax = F.log_softmax
 
     def _get_features(self, sentence, mask):
         embeds, _  = self.bert(sentence, attention_mask=mask)
@@ -119,6 +122,9 @@ class Bert(torch.nn.Module):
 
     def forward(self, sentence, tags, mask, is_test=False):
         emissions = self._get_features(sentence, mask)
+        emissions = self.log_softmax(emissions)
+        print("emissions:",emissions.shape)
+        print("softmax:",emissions)
         # print("tags:",tags.shape)
         # print("transpose:",emissions.transpose(1,2).shape)
         if not is_test: # Training，return loss
