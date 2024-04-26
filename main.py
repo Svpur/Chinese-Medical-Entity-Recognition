@@ -69,20 +69,29 @@ def validate(e, model, iterator, device):
 
             y_hat = model(x, y, z, is_test=True)
 
+            print("y:",len(y))
+            print("y_hat:",len(y_hat))
+            y_hat_orig = torch.masked_select(y_hat, mask)
+            print("y_hat_orig:",len(y_hat_orig))
+
+
             loss = model(x, y, z)
             losses += loss.item()
             # Save prediction
             # Y_hat.extend(y_hat.view(-1).cpu())
-            for j in y_hat:
-              Y_hat.extend(j)
+            # for j in y_hat:
+            #   Y_hat.extend(j)
+            Y_hat.append(y_hat_orig.cpu())
             # Save labels
             mask = (z==1)
             y_orig = torch.masked_select(y, mask)
+            print("y_orig:",len(y_orig))
             Y.append(y_orig.cpu())
 
     # Y_hat = [x for x in Y_hat if x != -100]
     Y = torch.cat(Y, dim=0).numpy()
-    Y_hat = np.array(Y_hat)
+    # Y_hat = np.array(Y_hat)
+    Y_hat = torch.cat(Y_hat, dim=0).numpy()
     print("Y:", Y.shape)
     print(Y)
     print("Y_hat:", Y_hat.shape)
