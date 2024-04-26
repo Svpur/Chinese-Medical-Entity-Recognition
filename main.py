@@ -113,7 +113,7 @@ def test(model, iterator, device):
             x = x.to(device)
             z = z.to(device)
             y_hat = model(x, y, z, is_test=True)
-            mask = (z==1)
+            mask = (z==1).gpu()
             # Save prediction
             y_hat_orig = torch.masked_select(y_hat, mask)
             Y_hat.append(y_hat_orig.cpu())
