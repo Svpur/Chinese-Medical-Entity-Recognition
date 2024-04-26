@@ -123,8 +123,7 @@ class Bert(torch.nn.Module):
     def forward(self, sentence, tags, mask, is_test=False):
         emissions = self._get_features(sentence, mask)
         emissions = self.log_softmax(emissions)
-        print("emissions:",emissions.shape)
-        print("softmax:",emissions)
+        # print("emissions:",emissions.shape)
         # print("tags:",tags.shape)
         # print("transpose:",emissions.transpose(1,2).shape)
         if not is_test: # Training，return loss
@@ -132,6 +131,7 @@ class Bert(torch.nn.Module):
             return loss
         else: # Testing，return decoding
             print("emissions:",emissions)
+            print("softmax:",emissions)
             # 在模型的 forward 方法中生成预测标签时使用 mask
             predicted_labels = torch.argmax(emissions, dim=2)
             print("未填充前:",predicted_labels)
