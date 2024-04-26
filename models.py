@@ -108,26 +108,26 @@ class Bert(torch.nn.Module):
 
     def _get_features(self, sentence, mask):
         embeds, _  = self.bert(sentence, attention_mask=mask)
-        print("embeds:",embeds.shape)
+        # print("embeds:",embeds.shape)
         
         enc = self.dropout(embeds)
         # enc = torch.flatten(enc, start_dim=1)
         enc = self.linear(enc)
-        print("enc:",enc.shape)
+        # print("enc:",enc.shape)
         # feats = self.classifier(enc)
         return enc
 
     def forward(self, sentence, tags, mask, is_test=False):
         emissions = self._get_features(sentence, mask)
-        print("tags:",tags.shape)
-        print("transpose:",emissions.transpose(1,2).shape)
+        # print("tags:",tags.shape)
+        # print("transpose:",emissions.transpose(1,2).shape)
         if not is_test: # Training，return loss
             loss = self.loss(emissions.transpose(1,2),tags)  # emissions.transpose(1,2) -> batch_size*class_num*max_len
             return loss
         else: # Testing，return decoding
             # 在模型的 forward 方法中生成预测标签时使用 mask
             predicted_labels = torch.argmax(emissions, dim=2)
-            predicted_labels_masked = predicted_labels.masked_fill(~mask, -1)  # 将填充项设置为 -1
+            predicted_labels_masked = predicted_labels.masked_fill(~mask, -100)  # 将填充项设置为 -100
             # 将预测的标签张量转换为列表，并过滤掉填充项
             predicted_labels_list = [label.tolist() for label in predicted_labels_masked] 
             # predicted_labels_list = [[lab for lab in seq if lab != -1] for seq in predicted_labels_masked]

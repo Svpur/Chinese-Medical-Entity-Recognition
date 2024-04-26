@@ -80,11 +80,13 @@ def validate(e, model, iterator, device):
             y_orig = torch.masked_select(y, mask)
             Y.append(y_orig.cpu())
 
-    Y_hat = [x for x in Y_hat if x != -1]
+    Y_hat = [x for x in Y_hat if x != -100]
     Y = torch.cat(Y, dim=0).numpy()
     Y_hat = np.array(Y_hat)
     print("Y:", Y.shape)
+    print(Y)
     print("Y_hat:", Y_hat.shape)
+    print(Y_hat)
     print()
     acc = (Y_hat == Y).mean()*100
 
