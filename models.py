@@ -39,18 +39,19 @@ class Bert_BiLSTM_CRF(nn.Module):
         enc, _ = self.lstm(embeds)
         enc = self.dropout(enc)
         feats = self.linear(enc)
-        print("feats:", feats.shape)
+        # print("feats:", feats)
         return feats
 
     def forward(self, sentence, tags, mask, is_test=False):
-        print("tags:", tags.shape)
+        print("tags:", tags)
         emissions = self._get_features(sentence)
+        print("emissions:", emissions)
         if not is_test: # Training，return loss
             loss=-self.crf.forward(emissions, tags, mask, reduction='mean')
             return loss
         else: # Testing，return decoding
             decode=self.crf.decode(emissions, mask)
-            print("decode:", len(decode))
+            print("decode:", decode)
             return decode
 
 # class Bert(torch.nn.Module):
