@@ -10,9 +10,13 @@
 import torch
 from torch.utils.data import Dataset
 from transformers import BertTokenizer
+from transformers import BertTokenizerFast
 
-bert_model = 'bert-base-chinese'
-tokenizer = BertTokenizer.from_pretrained(bert_model)
+# bert_model = 'bert-base-chinese'
+# tokenizer = BertTokenizer.from_pretrained(bert_model)
+
+tokenizer = BertTokenizerFast.from_pretrained('bert-base-cased')
+
 VOCAB = ('<PAD>', '[CLS]', '[SEP]', 'O', 'B-BODY','I-TEST', 'I-EXAMINATIONS',
             'I-TREATMENT', 'B-DRUG', 'B-TREATMENT', 'I-DISEASES', 'B-EXAMINATIONS',
                 'I-BODY', 'B-TEST', 'B-DISEASES', 'I-DRUG')
