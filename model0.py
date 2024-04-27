@@ -11,13 +11,11 @@ class Bert(torch.nn.Module):
         self.bert = BertForTokenClassification.from_pretrained(
                        'bert-base-cased', 
                                      num_labels=self.tagset_size)
-        self.softmax = F.softmax()
-
 
     def forward(self, input_id, label, mask):
         output = self.bert(input_ids=input_id, attention_mask=mask,
                            labels=label, return_dict=False)
         # print(output)
         loss = output[0]
-        logits = self.softmax(output[1], dim=2)
+        logits = F.softmax(output[1], dim=2)
         return loss, logits
