@@ -150,7 +150,7 @@ class Bert(torch.nn.Module):
 class Bert_CRF(nn.Module):
 
     def __init__(self, tag_to_ix, embedding_dim=768):
-        super(Bert_BiLSTM_CRF, self).__init__()
+        super(Bert_CRF, self).__init__()
         self.tag_to_ix = tag_to_ix
         self.tagset_size = len(tag_to_ix)
         self.embedding_dim = embedding_dim
