@@ -147,6 +147,39 @@ class Bert(torch.nn.Module):
             # print()
             return predicted_labels
         
+class Bert_CRF(nn.Module):
+
+    def __init__(self, tag_to_ix, embedding_dim=768):
+        super(Bert_BiLSTM_CRF, self).__init__()
+        self.tag_to_ix = tag_to_ix
+        self.tagset_size = len(tag_to_ix)
+        self.embedding_dim = embedding_dim
+
+        self.bert = BertModel.from_pretrained('bert-base-chinese', return_dict=False)
+        self.dropout = nn.Dropout(p=0.1)
+        self.linear = nn.Linear(self.embedding_dim, self.tagset_size)
+        self.crf = CRF(self.tagset_size, batch_first=True)
+    
+    def _get_features(self, sentence):
+        with torch.no_grad():
+          embeds, _  = self.bert(sentence)
+        enc = self.dropout(embeds)
+        feats = self.linear(enc)
+        # print("feats:", feats)
+        return feats
+
+    def forward(self, sentence, tags, mask, is_test=False):
+        print("tags:", tags)
+        emissions = self._get_features(sentence)
+        print("emissions:", emissions)
+        if not is_test: # Training，return loss
+            loss=-self.crf.forward(emissions, tags, mask, reduction='mean')
+            return loss
+        else: # Testing，return decoding
+            decode=self.crf.decode(emissions, mask)
+            print("decode:", decode)
+            return decode
+        
         
 if __name__=="__main__":
     model = Bert_BiLSTM_CRF(tag2idx)

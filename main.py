@@ -16,7 +16,7 @@ import warnings
 import argparse
 import numpy as np
 from sklearn import metrics
-from models import Bert_BiLSTM_CRF, Bert
+from models import Bert_BiLSTM_CRF, Bert, Bert_CRF
 from transformers import AdamW, get_linear_schedule_with_warmup
 from utils import NerDataset, PadBatch, VOCAB, tokenizer, tag2idx, idx2tag
 
@@ -57,7 +57,6 @@ def validate(e, model, iterator, device):
     Y, Y_hat = [], []
     losses = 0
     step = 0
-   
     with torch.no_grad():
         for i, batch in enumerate(iterator):
             step += 1
@@ -69,36 +68,18 @@ def validate(e, model, iterator, device):
 
             y_hat = model(x, y, z, is_test=True)
 
-            mask = (z==1)
-
-            # print("y:",len(y))
-            # print("y_hat:",len(y_hat))
-            y_hat_orig = torch.masked_select(y_hat, mask)
-            # print("y_hat_orig:",len(y_hat_orig))
-
-
             loss = model(x, y, z)
             losses += loss.item()
             # Save prediction
-            # Y_hat.extend(y_hat.view(-1).cpu())
-            # for j in y_hat:
-            #   Y_hat.extend(j)
-            Y_hat.append(y_hat_orig.cpu())
+            for j in y_hat:
+              Y_hat.extend(j)
             # Save labels
-            # mask = (z==1)
+            mask = (z==1)
             y_orig = torch.masked_select(y, mask)
-            # print("y_orig:",len(y_orig))
             Y.append(y_orig.cpu())
 
-    # Y_hat = [x for x in Y_hat if x != -100]
     Y = torch.cat(Y, dim=0).numpy()
-    # Y_hat = np.array(Y_hat)
-    Y_hat = torch.cat(Y_hat, dim=0).numpy()
-    print("Y:", Y.shape)
-    print(Y)
-    print("Y_hat:", Y_hat.shape)
-    print(Y_hat)
-    print()
+    Y_hat = np.array(Y_hat)
     acc = (Y_hat == Y).mean()*100
 
     print("Epoch: {}, Val Loss:{:.4f}, Val Acc:{:.3f}%".format(e, losses/step, acc))
@@ -113,19 +94,15 @@ def test(model, iterator, device):
             x = x.to(device)
             z = z.to(device)
             y_hat = model(x, y, z, is_test=True)
-            mask = (z==1).cpu()
             # Save prediction
-            y_hat_orig = torch.masked_select(y_hat.cpu(), mask)
-            Y_hat.append(y_hat_orig)
-            # for j in y_hat:
-            #   Y_hat.extend(j)
+            for j in y_hat:
+              Y_hat.extend(j)
             # Save labels
-            # mask = (z==1).cpu()
+            mask = (z==1).cpu()
             y_orig = torch.masked_select(y, mask)
             Y.append(y_orig)
 
     Y = torch.cat(Y, dim=0).numpy()
-    Y_hat = torch.cat(Y_hat, dim=0).numpy()
     y_true = [idx2tag[i] for i in Y]
     y_pred = [idx2tag[i] for i in Y_hat]
 
@@ -151,7 +128,7 @@ if __name__=="__main__":
     _best_val_acc = 1e-18
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--n_epochs", type=int, default=40)
     parser.add_argument("--trainset", type=str, default="./CCKS_2019_Task1/processed_data/train_dataset.txt")
@@ -164,9 +141,9 @@ if __name__=="__main__":
     if ner.Model == 'Bert_BiLSTM_CRF':
         print('Loading Bert_BiLSTM_CRF model.')
         model = Bert_BiLSTM_CRF(tag2idx).cuda()
-    # elif ner.Model == 'Bert_CRF':
-    #     print('Loading Bert_CRF model.')
-    #     model = BiLSTM_CRF(tag2idx).cuda()
+    elif ner.Model == 'Bert_CRF':
+        print('Loading Bert_CRF model.')
+        model = Bert_CRF(tag2idx).cuda()
     elif ner.Model == 'Bert':
         print('Loading Bert model.')
         model = Bert(tag2idx).cuda()
