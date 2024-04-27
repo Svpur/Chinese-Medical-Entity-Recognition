@@ -76,13 +76,13 @@ def validate(e, model, iterator, device):
             y = y.to(device)
             z = z.to(device)
             loss, logits = model(x,y,z)
-
+            print("y:", y.shape)
             print("logits:", logits.shape)
             print("logits[0]:", logits[0].shape)
             print("logits[1]:", logits[1].shape)
             print("logits[2]:", logits[2].shape)
             # 过滤掉特殊token及padding的token
-            logits_clean = logits.transpose(1, 2)[y != 0]
+            logits_clean = logits[1].transpose(1, 2)[y != 0]
             print("logits_clean:", logits_clean.shape)
             label_clean = y[y != 0]
             # 获取最大概率值
