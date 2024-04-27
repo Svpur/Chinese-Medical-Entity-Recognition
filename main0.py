@@ -86,12 +86,12 @@ def validate(e, model, iterator, device):
             # 获取最大概率值
             logits_max = logits.argmax(dim=2)
             print("logits_max:", logits_max.shape)
-            logits_clean = logits_max[y != 0]
+            logits_clean = logits_max[z == 1]
             print("logits_clean:", logits_clean.shape)
-            M = logits_max[z]
-            print("M:", M.shape)
+            # M = logits_max[z]
+            # print("M:", M.shape)
 
-            label_clean = y[y != 0]
+            label_clean = y[z == 1]
             print("label_clean:", label_clean.shape)
     
             predictions = logits_clean
@@ -99,6 +99,8 @@ def validate(e, model, iterator, device):
             losses += loss.item()
 
             # 计算准确率
+            print("predictions:", predictions)
+            print("label_clean:", label_clean)
             acc = (predictions == label_clean).float().mean()
             total_acc_val += acc
 
