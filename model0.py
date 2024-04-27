@@ -17,5 +17,5 @@ class Bert(torch.nn.Module):
                            labels=label, return_dict=False)
         # print(output)
         loss = output[0]
-        logits = F.softmax(output[1], dim=2)
+        logits = F.log_softmax(output[1], dim=2)
         return loss, logits
