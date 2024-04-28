@@ -128,7 +128,7 @@ if __name__=="__main__":
     _best_val_acc = 1e-18
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--n_epochs", type=int, default=40)
     parser.add_argument("--trainset", type=str, default="./CCKS_2019_Task1/processed_data/train_dataset.txt")
@@ -157,19 +157,19 @@ if __name__=="__main__":
     train_iter = data.DataLoader(dataset=train_dataset,
                                  batch_size=ner.batch_size,
                                  shuffle=True,
-                                 num_workers=4,
+                                 num_workers=2,
                                  collate_fn=PadBatch)
 
     eval_iter = data.DataLoader(dataset=eval_dataset,
                                  batch_size=(ner.batch_size)//2,
                                  shuffle=False,
-                                 num_workers=4,
+                                 num_workers=2,
                                  collate_fn=PadBatch)
 
     test_iter = data.DataLoader(dataset=test_dataset,
                                 batch_size=(ner.batch_size)//2,
                                 shuffle=False,
-                                num_workers=4,
+                                num_workers=2,
                                 collate_fn=PadBatch)
 
     #optimizer = optim.Adam(self.model.parameters(), lr=ner.lr, weight_decay=0.01)
