@@ -157,19 +157,19 @@ if __name__=="__main__":
     train_iter = data.DataLoader(dataset=train_dataset,
                                  batch_size=ner.batch_size,
                                  shuffle=True,
-                                 num_workers=2,
+                                 num_workers=0,
                                  collate_fn=PadBatch)
 
     eval_iter = data.DataLoader(dataset=eval_dataset,
                                  batch_size=(ner.batch_size)//2,
                                  shuffle=False,
-                                 num_workers=2,
+                                 num_workers=0,
                                  collate_fn=PadBatch)
 
     test_iter = data.DataLoader(dataset=test_dataset,
                                 batch_size=(ner.batch_size)//2,
                                 shuffle=False,
-                                num_workers=2,
+                                num_workers=0,
                                 collate_fn=PadBatch)
 
     #optimizer = optim.Adam(self.model.parameters(), lr=ner.lr, weight_decay=0.01)
