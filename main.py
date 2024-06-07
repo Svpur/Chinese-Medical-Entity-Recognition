@@ -105,6 +105,8 @@ def test(model, iterator, device):
     Y = torch.cat(Y, dim=0).numpy()
     y_true = [idx2tag[i] for i in Y]
     y_pred = [idx2tag[i] for i in Y_hat]
+    print("y_true:", y_true)
+    print("y_pred:", y_pred)
 
     return y_true, y_pred
 
@@ -128,7 +130,7 @@ if __name__=="__main__":
     _best_val_acc = 1e-18
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_size", type=int, default=64)
+    parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--lr", type=float, default=0.001)
     parser.add_argument("--n_epochs", type=int, default=40)
     parser.add_argument("--trainset", type=str, default="./CCKS_2019_Task1/processed_data/train_dataset.txt")
