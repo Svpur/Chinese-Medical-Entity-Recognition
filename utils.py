@@ -16,7 +16,8 @@ from transformers import AlbertModel, AlbertTokenizer
 # bert_model = 'bert-base-chinese'
 # tokenizer = BertTokenizer.from_pretrained(bert_model)
 
-Albert_model = 'albert-base-v2'
+# Albert_model = 'albert-base-v2'
+Albert_model = 'clue/albert_chinese_base'
 tokenizer = AlbertTokenizer.from_pretrained(Albert_model)
 
 # tokenizer = BertTokenizerFast.from_pretrained('bert-base-cased')
