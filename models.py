@@ -44,15 +44,15 @@ class Bert_BiLSTM_CRF(nn.Module):
         return feats
 
     def forward(self, sentence, tags, mask, is_test=False):
-        print("tags:", tags)
+        # print("tags:", tags)
         emissions = self._get_features(sentence)
-        print("emissions:", emissions)
+        # print("emissions:", emissions)
         if not is_test: # Training，return loss
             loss=-self.crf.forward(emissions, tags, mask, reduction='mean')
             return loss
         else: # Testing，return decoding
             decode=self.crf.decode(emissions, mask)
-            print("decode:", decode)
+            # print("decode:", decode)
             return decode
         
         
@@ -165,15 +165,15 @@ class AlBert_BiLSTM_CRF(nn.Module):
         return feats
 
     def forward(self, sentence, tags, mask, is_test=False):
-        print("tags:", tags)
+        # print("tags:", tags)
         emissions = self._get_features(sentence)
-        print("emissions:", emissions)
+        # print("emissions:", emissions)
         if not is_test: # Training，return loss
             loss=-self.crf.forward(emissions, tags, mask, reduction='mean')
             return loss
         else: # Testing，return decoding
             decode=self.crf.decode(emissions, mask)
-            print("decode:", decode)
+            # print("decode:", decode)
             return decode
         
 if __name__=="__main__":

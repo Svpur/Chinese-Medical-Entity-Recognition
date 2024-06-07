@@ -105,8 +105,8 @@ def test(model, iterator, device):
     Y = torch.cat(Y, dim=0).numpy()
     y_true = [idx2tag[i] for i in Y]
     y_pred = [idx2tag[i] for i in Y_hat]
-    print("y_true:", y_true)
-    print("y_pred:", y_pred)
+    # print("y_true:", y_true)
+    # print("y_pred:", y_pred)
 
     return y_true, y_pred
 
