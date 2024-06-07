@@ -16,7 +16,7 @@ import warnings
 import argparse
 import numpy as np
 from sklearn import metrics
-from models import Bert_BiLSTM_CRF, Bert, Bert_CRF
+from models import Bert_BiLSTM_CRF, Bert, Bert_CRF, AlBert_BiLSTM_CRF
 from transformers import AdamW, get_linear_schedule_with_warmup
 from utils import NerDataset, PadBatch, VOCAB, tokenizer, tag2idx, idx2tag
 
@@ -147,6 +147,9 @@ if __name__=="__main__":
     elif ner.Model == 'Bert':
         print('Loading Bert model.')
         model = Bert(tag2idx).cuda()
+    elif ner.Model == 'AlBert_BiLSTM_CRF':
+        print('Loading AlBert_BiLSTM_CRF model.')
+        model = AlBert_BiLSTM_CRF(tag2idx).cuda()
 
     print('Initial model Done.')
     train_dataset = NerDataset(ner.trainset)

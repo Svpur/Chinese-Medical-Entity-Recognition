@@ -11,9 +11,13 @@ import torch
 from torch.utils.data import Dataset
 from transformers import BertTokenizer
 from transformers import BertTokenizerFast
+from transformers import AlbertModel, AlbertTokenizer
 
-bert_model = 'bert-base-chinese'
-tokenizer = BertTokenizer.from_pretrained(bert_model)
+# bert_model = 'bert-base-chinese'
+# tokenizer = BertTokenizer.from_pretrained(bert_model)
+
+Albert_model = 'albert-base-v2'
+tokenizer = AlbertTokenizer.from_pretrained(Albert_model)
 
 # tokenizer = BertTokenizerFast.from_pretrained('bert-base-cased')
 
