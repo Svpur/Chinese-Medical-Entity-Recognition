@@ -161,8 +161,7 @@ class Bert_CRF(nn.Module):
         self.crf = CRF(self.tagset_size, batch_first=True)
     
     def _get_features(self, sentence):
-        with torch.no_grad():
-          embeds, _  = self.bert(sentence)
+        embeds, _  = self.bert(sentence)
         enc = self.dropout(embeds)
         feats = self.linear(enc)
         # print("feats:", feats)
