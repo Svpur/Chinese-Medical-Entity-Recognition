@@ -148,7 +148,7 @@ class AlBert_BiLSTM_CRF(nn.Module):
         self.embedding_dim = embedding_dim
 
         # 使用ALBERT模型
-        self.bert = BertModel.from_pretrained('voidful/albert_chinese_base', return_dict=False)
+        self.bert = BertModel.from_pretrained('voidful/albert_chinese_large', return_dict=False)
         self.lstm = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim//2,
                             num_layers=2, bidirectional=True, batch_first=True)
         self.dropout = nn.Dropout(p=0.1)
@@ -156,8 +156,8 @@ class AlBert_BiLSTM_CRF(nn.Module):
         self.crf = CRF(self.tagset_size, batch_first=True)
     
     def _get_features(self, sentence):
-        with torch.no_grad():
-          embeds, _  = self.bert(sentence)
+        # with torch.no_grad():
+        embeds, _  = self.bert(sentence)
         enc, _ = self.lstm(embeds)
         enc = self.dropout(enc)
         feats = self.linear(enc)
