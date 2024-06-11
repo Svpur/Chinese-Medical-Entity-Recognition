@@ -182,8 +182,8 @@ if __name__=="__main__":
                                 collate_fn=PadBatch)
 
     #optimizer = optim.Adam(self.model.parameters(), lr=ner.lr, weight_decay=0.01)
-    # optimizer = AdamW(model.parameters(), lr=ner.lr, eps=1e-6)
-    optimizer=torch.optim.SGD(model.parameters(), lr=ner.lr, momentum=0.9, weight_decay=1e-4)
+    optimizer = AdamW(model.parameters(), lr=ner.lr, eps=1e-6)
+    # optimizer=torch.optim.SGD(model.parameters(), lr=ner.lr, momentum=0.9, weight_decay=1e-4)
 
     # Warmup
     len_dataset = len(train_dataset) 
