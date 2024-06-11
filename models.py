@@ -156,8 +156,8 @@ class AlBert_BiLSTM_CRF(nn.Module):
         self.crf = CRF(self.tagset_size, batch_first=True)
     
     def _get_features(self, sentence):
-        # with torch.no_grad():
-        embeds, _  = self.bert(sentence)
+        with torch.no_grad():
+            embeds, _  = self.bert(sentence)
         enc, _ = self.lstm(embeds)
         enc = self.dropout(enc)
         feats = self.linear(enc)
