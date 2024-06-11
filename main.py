@@ -153,9 +153,9 @@ if __name__=="__main__":
         print('Loading AlBert_BiLSTM_CRF model.')
         model = AlBert_BiLSTM_CRF(tag2idx).cuda()
 
-    # # Load the saved model weights
-    # model_path = 'BERT_BiLSTM_CRF.pth'
-    # model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
+    # Load the saved model weights
+    model_path = '/kaggle/input/crf-nlp-checkpoints/ALBERT_BiLSTM_CRF.pth'
+    model.load_state_dict(torch.load(model_path, map_location=torch.device(device)))
 
     print('Initial model Done.')
     train_dataset = NerDataset(ner.trainset)

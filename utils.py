@@ -18,7 +18,7 @@ from transformers import AlbertModel, AlbertTokenizer
 
 # Albert_model = 'albert-base-v2'
 Albert_model = 'voidful/albert_chinese_base'
-tokenizer = AlbertTokenizer.from_pretrained(Albert_model)
+tokenizer = BertTokenizer.from_pretrained(Albert_model)
 
 # tokenizer = BertTokenizerFast.from_pretrained('bert-base-cased')
 
