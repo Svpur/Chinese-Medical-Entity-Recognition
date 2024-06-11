@@ -140,7 +140,7 @@ class Bert_CRF(nn.Module):
 
 class AlBert_BiLSTM_CRF(nn.Module):
 
-    def __init__(self, tag_to_ix, embedding_dim=768, hidden_dim=256):
+    def __init__(self, tag_to_ix, embedding_dim=1024, hidden_dim=256): # 768
         super(AlBert_BiLSTM_CRF, self).__init__()
         self.tag_to_ix = tag_to_ix
         self.tagset_size = len(tag_to_ix)
