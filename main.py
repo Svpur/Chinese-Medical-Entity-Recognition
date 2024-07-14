@@ -88,7 +88,7 @@ def test(model, iterator, device):
     with torch.no_grad():
         for i, batch_data in enumerate(iterator):
             input_ids = batch_data["input_ids"].to(device)
-            label_ids = batch_data["label_ids"].to(device)
+            label_ids = batch_data["label_ids"]
             token_type_ids = batch_data["token_type_ids"].to(device)
             attention_mask = batch_data["attention_mask"].to(device)
             y_hat = model(input_ids, label_ids, attention_mask, token_type_ids, is_test=True)
@@ -178,24 +178,31 @@ if __name__ == "__main__":
     warm_up_ratio = 0.1  # Define 10% steps
     scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps = warm_up_ratio * total_steps, num_training_steps = total_steps)
 
-    print('Start Train...,')
-    for epoch in range(1, ner.n_epochs+1):
+    # print('Start Train...,')
+    # for epoch in range(1, ner.n_epochs+1):
 
-        train(epoch, model, train_iter, optimizer, scheduler, device)
-        candidate_model, loss, acc = validate(epoch, model, eval_iter, device)
+    #     train(epoch, model, train_iter, optimizer, scheduler, device)
+    #     candidate_model, loss, acc = validate(epoch, model, eval_iter, device)
 
-        if loss < _best_val_loss and acc > _best_val_acc:
-          best_model = candidate_model
-          _best_val_loss = loss
-          _best_val_acc = acc
+    #     if loss < _best_val_loss and acc > _best_val_acc:
+    #       best_model = candidate_model
+    #       _best_val_loss = loss
+    #       _best_val_acc = acc
 
-        if (epoch+1) % 5 == 0:
-          if not os.path.exists('checkpoints'):
-            os.makedirs('checkpoints')
-          print("Saving model...")
-          torch.save(best_model.state_dict(), "checkpoints/" + ner.Model + ".pth")
+    #     if (epoch+1) % 5 == 0:
+    #       if not os.path.exists('checkpoints'):
+    #         os.makedirs('checkpoints')
+    #       print("Saving model...")
+    #       torch.save(best_model.state_dict(), "checkpoints/" + ner.Model + ".pth")
 
-        print("=============================================")
+    #     print("=============================================")
+
+
+    # 加载权重文件
+    weight_path = '/kaggle/input/mrc-bert-bilstm-crf/MRC_Bert_BiLSTM_CRF.pth'
+    model.load_state_dict(torch.load(weight_path, map_location=device))
+
+    best_model = model
 
     # 测试模型
     y_test, y_pred = test(best_model, test_iter, device)
