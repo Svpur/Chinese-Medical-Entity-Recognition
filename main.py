@@ -189,6 +189,12 @@ if __name__ == "__main__":
           _best_val_loss = loss
           _best_val_acc = acc
 
+        if (epoch+1) % 5 == 0:
+          if not os.path.exists('checkpoints'):
+            os.makedirs('checkpoints')
+          print("Saving model...")
+          torch.save(best_model.state_dict(), "checkpoints/" + ner.Model + ".pth")
+
         print("=============================================")
 
     # 测试模型
